@@ -17,54 +17,109 @@ PIECES_DIR = APP_DIR / "pieces_jointes"
 PIECES_DIR.mkdir(exist_ok=True)
 st.set_page_config(page_title="JT-AGRITECH SOLUTIONS", page_icon="🌱", layout="wide")
 
-# ===== PWA MOBILE - VRAI MANIFEST + SERVICE WORKER + BOUTON INSTALLER AUTO =====
+# ===== PWA MOBILE - CORRIGE TABLETTE + CLOUD =====
 pwa_injection = """
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIkpULUFnUklURUNIIFNPTFVUSU9OUyIsICJzaG9ydF9uYW1lIjogIkpULUFnUklURUNIIiwgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxYjVlMjAiLCAidGhlbWVfY29sb3IiOiAiIzJlN2QzMiJ9">
 <meta name="theme-color" content="#2e7d32">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="JT-AGRITECH">
-<link rel="apple-touch-icon" href="/logo.png">
+<meta name="mobile-web-app-capable" content="yes">
 <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/service-worker.js').then(function(reg){console.log('SW enregistre',reg.scope);}).catch(function(err){console.log('Erreur SW',err);});
-  });
-}
-let deferredPrompt;
+let deferredPrompt = null;
+let installAvailable = false;
+
 window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault(); deferredPrompt = e;
-  const b1=document.getElementById('pwa-install-btn'); if(b1){b1.style.display='block';}
+  console.log('PWA: Install prompt disponible');
+  e.preventDefault(); 
+  deferredPrompt = e;
+  installAvailable = true;
+  const b1=document.getElementById('pwa-install-btn'); if(b1){b1.style.display='block'; b1.innerText='📲 INSTALLER APP';}
   const b2=document.getElementById('pwa-install-banner'); if(b2){b2.style.display='flex';}
+  const b3=document.getElementById('pwa-install-btn-tablet'); if(b3){b3.style.display='block';}
 });
-function pwaInstall(){
+
+window.addEventListener('appinstalled', () => {
+  console.log('PWA installee');
   const banner=document.getElementById('pwa-install-banner'); if(banner){banner.style.display='none';}
-  if(deferredPrompt){deferredPrompt.prompt(); deferredPrompt.userChoice.then(()=>{deferredPrompt=null;});}
-  else{alert('Android: Menu > Installer app | iPhone: Partage > Sur ecran accueil');}
+  deferredPrompt = null;
+});
+
+function pwaInstall(){
+  console.log('PWA Install clique, disponible:', installAvailable);
+  const banner=document.getElementById('pwa-install-banner'); 
+  if(banner){banner.style.display='none';}
+  if(deferredPrompt){
+    deferredPrompt.prompt(); 
+    deferredPrompt.userChoice.then((choice)=>{
+      console.log('Choix user:', choice.outcome);
+      deferredPrompt=null;
+      installAvailable = false;
+    });
+  } else {
+    // Fallback pour tablette et iPad
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isIPad = navigator.userAgent.includes('Mac') && 'ontouchend' in document;
+    if(isIOS || isIPad){
+      alert('📲 iPad/iPhone: Clique le bouton Partage 📤 en haut, puis "Sur l\\'écran d\\'accueil" → Ajouter');
+    } else {
+      alert('📲 TABLETTE ANDROID: Clique les 3 points ⋮ en haut à droite de Chrome → "Installer l\\'application" ou "Ajouter à l\\'écran d\\'accueil"');
+    }
+  }
 }
+
 function pwaDismiss(){
   const banner=document.getElementById('pwa-install-banner'); if(banner){banner.style.display='none';}
   localStorage.setItem('pwa-dismissed',Date.now());
 }
+
+// Affiche banniere apres 3 sec meme si pas de prompt (pour tablettes)
 setTimeout(()=>{
   const dismissed=localStorage.getItem('pwa-dismissed');
   const isStandalone=window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-  if(!isStandalone && (!dismissed || (Date.now()-dismissed)>86400000)){
-    const banner=document.getElementById('pwa-install-banner');
-    if(banner && deferredPrompt){banner.style.display='flex';}
+  const banner=document.getElementById('pwa-install-banner');
+  const btnTablet=document.getElementById('pwa-install-btn-tablet');
+  if(!isStandalone){
+    if(banner){
+      // Toujours afficher sur tablette, meme sans prompt
+      if(!dismissed || (Date.now()-dismissed)>3600000){
+        banner.style.display='flex';
+      }
+    }
+    if(btnTablet){
+      btnTablet.style.display='block';
+    }
   }
-},3000);
+  // Debug info
+  console.log('PWA Check - Standalone:', isStandalone, 'Install dispo:', installAvailable, 'UserAgent:', navigator.userAgent);
+},3500);
 </script>
 <style>
-#pwa-install-banner{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#1b5e20 0%,#2e7d32 100%);color:white;padding:12px 16px;display:none;align-items:center;justify-content:space-between;z-index:999999;box-shadow:0 -4px 20px rgba(0,0,0,0.3);}
-#pwa-install-btn-main{background:#ff9800;color:white;border:none;padding:10px 18px;border-radius:25px;font-weight:800;font-size:13px;cursor:pointer;}
-#pwa-dismiss-btn{background:transparent;color:white;border:1px solid rgba(255,255,255,0.5);padding:8px 12px;border-radius:20px;font-size:12px;cursor:pointer;}
-@media (min-width:768px){#pwa-install-banner{display:none !important;}}
+#pwa-install-banner{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#1b5e20 0%,#2e7d32 100%);color:white;padding:14px 16px;display:none;align-items:center;justify-content:space-between;z-index:999999;box-shadow:0 -4px 20px rgba(0,0,0,0.4);font-family:sans-serif;}
+#pwa-install-banner .pwa-text{display:flex;flex-direction:column;}
+#pwa-install-banner .pwa-text strong{font-size:14px;}
+#pwa-install-banner .pwa-text span{font-size:11px;opacity:0.9;}
+#pwa-install-btn-main{background:#ff9800;color:white;border:none;padding:12px 20px;border-radius:25px;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,0.3);}
+#pwa-dismiss-btn{background:transparent;color:white;border:1px solid rgba(255,255,255,0.6);padding:8px 14px;border-radius:20px;font-size:12px;cursor:pointer;margin-right:8px;}
+#pwa-install-btn-tablet{display:none;position:fixed;top:70px;right:15px;background:linear-gradient(135deg,#ff6f00,#ff9800);color:white;border:none;padding:14px 22px;border-radius:30px;font-weight:900;font-size:14px;z-index:999998;box-shadow:0 4px 20px rgba(255,111,0,0.5);cursor:pointer;animation:pulse 2s infinite;}
+@keyframes pulse{0%{transform:scale(1);}50%{transform:scale(1.05);}100%{transform:scale(1);}}
+/* TABLETTE: on affiche la banniere, on ne cache plus */
+@media (min-width:768px){
+  #pwa-install-banner{padding:16px 20px;}
+  #pwa-install-btn-tablet{display:block;}
+}
 </style>
-<div id="pwa-install-banner"><div class="pwa-text"><strong>Installer JT-AGRITECH</strong><span>Acces rapide + hors ligne</span></div><div><button id="pwa-dismiss-btn" onclick="pwaDismiss()">Plus tard</button><button id="pwa-install-btn-main" onclick="pwaInstall()">Installer</button></div></div>
+<div id="pwa-install-banner">
+  <div class="pwa-text"><strong>📲 Installer JT-AGRITECH</strong><span>Tablette & mobile - Accès rapide</span></div>
+  <div style="display:flex;align-items:center;">
+    <button id="pwa-dismiss-btn" onclick="pwaDismiss()">Plus tard</button>
+    <button id="pwa-install-btn-main" onclick="pwaInstall()">Installer</button>
+  </div>
+</div>
+<button id="pwa-install-btn-tablet" onclick="pwaInstall()" style="display:none;">📲 INSTALLER SUR TABLETTE</button>
 """
 st.markdown(pwa_injection, unsafe_allow_html=True)
-st.sidebar.markdown('<style>#pwa-install-btn{display:none;width:100%;background:linear-gradient(135deg,#ff6f00,#ff9800);color:white;border:none;padding:12px;border-radius:12px;font-weight:800;font-size:13px;margin:10px 0;cursor:pointer;}</style><button id="pwa-install-btn" onclick="pwaInstall()">INSTALLER APP MOBILE</button>', unsafe_allow_html=True)
+st.sidebar.markdown('<style>#pwa-install-btn{display:none;width:100%;background:linear-gradient(135deg,#ff6f00,#ff9800);color:white;border:none;padding:14px;border-radius:12px;font-weight:800;font-size:14px;margin:10px 0;cursor:pointer;box-shadow:0 2px 10px rgba(255,152,0,0.3);}</style><button id="pwa-install-btn" onclick="pwaInstall()">📲 INSTALLER APP TABLETTE/MOBILE</button>', unsafe_allow_html=True)
 
 
 def find_file(names):
