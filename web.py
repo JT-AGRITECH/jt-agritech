@@ -1593,32 +1593,44 @@ with st.sidebar:
 
  if logo_path: st.image(str(logo_path),width=90)
  st.markdown("### JT-AGRITECH SOLUTIONS")
- menu=st.radio("RUBRIQUES", [
-  "📊 TABLEAU DE BORD",
-  "👨‍🌾 ELEVEURS",
-  "➕ AJOUTER ELEVEUR",
-  "🧬 MISE EN BAC",
-  "🧬 STOCK GENITEURS",
-  "🔔 RAPPELS AUTO",
-  "💵 FINANCES COMPTABLE",
-  "💳 IMPAYES & RELANCES",
-  "📄 CONTRATS",
-  "🧾 FACTURES/DEVIS",
-  "📈 STATISTIQUES CA",
-  "📊 BUSINESS INTELLIGENCE",
-  "🏆 CLASSEMENT ELEVEURS",
-  "💰 EXPORT OHADA",
-  "📸 SUIVI PHOTOS",
-  "🎓 FORMATION",
-  "👥 MULTI-UTILISATEURS",
-  "📝 AUDIT TRAIL",
-  "📱 PWA MOBILE",
-  "☁️ CLOUD AUTO",
-  "💬 WHATSAPP",
-  "📍 GÉOLOCALISATION",
-  "🗺️ PLANNING TOURNEES",
-  "💾 SAUVEGARDE"
- ], label_visibility="collapsed")
+ st.markdown("#### 📂 RUBRIQUES PAR CATÉGORIE")
+ 
+ # Groupement par catégorie - ne modifie rien d'autre, garde noms exacts pour compatibilité
+ CATEGORIES = {
+  "🏠 TABLEAU DE BORD & ANALYSES": ["📊 TABLEAU DE BORD", "📊 BUSINESS INTELLIGENCE", "📈 STATISTIQUES CA", "🏆 CLASSEMENT ELEVEURS"],
+  "👨‍🌾 ÉLEVEURS & PRODUCTION": ["👨‍🌾 ELEVEURS", "➕ AJOUTER ELEVEUR", "🧬 MISE EN BAC", "🧬 STOCK GENITEURS", "📸 SUIVI PHOTOS", "🎓 FORMATION"],
+  "💰 FINANCES & CONTRATS": ["💵 FINANCES COMPTABLE", "💳 IMPAYES & RELANCES", "📄 CONTRATS", "🧾 FACTURES/DEVIS", "💰 EXPORT OHADA"],
+  "📱 COMMUNICATION & TERRAIN": ["🔔 RAPPELS AUTO", "💬 WHATSAPP", "📍 GÉOLOCALISATION", "🗺️ PLANNING TOURNEES"],
+  "⚙️ SYSTÈME & SÉCURITÉ": ["👥 MULTI-UTILISATEURS", "📝 AUDIT TRAIL", "📱 PWA MOBILE", "☁️ CLOUD AUTO", "💾 SAUVEGARDE"]
+ }
+ 
+ # Sélection catégorie
+ if 'selected_category' not in st.session_state:
+  st.session_state['selected_category'] = "🏠 TABLEAU DE BORD & ANALYSES"
+ 
+ selected_category = st.selectbox("📂 CATÉGORIE", list(CATEGORIES.keys()), index=list(CATEGORIES.keys()).index(st.session_state['selected_category']) if st.session_state['selected_category'] in CATEGORIES else 0, key="cat_select")
+ st.session_state['selected_category'] = selected_category
+ 
+ # Affiche rubriques de la catégorie sélectionnée
+ rubriques_cat = CATEGORIES[selected_category]
+ 
+ # Garde le menu sélectionné
+ if 'menu_selection' not in st.session_state:
+  st.session_state['menu_selection'] = "📊 TABLEAU DE BORD"
+ 
+ # Si catégorie changée, garde menu si existe dans nouvelle catégorie sinon premier
+ if st.session_state['menu_selection'] not in rubriques_cat:
+  st.session_state['menu_selection'] = rubriques_cat[0]
+ 
+ menu = st.radio(f"{selected_category}", rubriques_cat, index=rubriques_cat.index(st.session_state['menu_selection']) if st.session_state['menu_selection'] in rubriques_cat else 0, key="menu_radio", label_visibility="collapsed")
+ st.session_state['menu_selection'] = menu
+ 
+ # Aperçu rapide autres catégories
+ st.divider()
+ st.markdown("**🔍 Autres catégories:**")
+ for cat, items in CATEGORIES.items():
+  if cat != selected_category:
+   st.caption(f"{cat}: {len(items)} rubriques")
 
 c1,c2=st.columns([1,4])
 with c1:
