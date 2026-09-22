@@ -17,6 +17,18 @@ PIECES_DIR = APP_DIR / "pieces_jointes"
 PIECES_DIR.mkdir(exist_ok=True)
 st.set_page_config(page_title="JT-AGRITECH", page_icon="logo.png", layout="wide")
 
+# AUTO-CREATION logo.png si manquant
+try:
+    _lp = APP_DIR / "logo.png"
+    if not _lp.exists():
+        try:
+            _lp.write_bytes(base64.b64decode(_jt_icon_b64))
+        except:
+            pass
+except:
+    pass
+
+
 # 🔒 LIEN SÛR POUR ÉLEVEURS - Détection ?role=eleveur
 # Si lien sûr utilisé, affiche seulement session éleveur
 try:
@@ -1659,9 +1671,9 @@ def calculer_prime(fidelite_score, total_ca):
 
 
 
-# MASQUE JS et STREAMLIT
+# MASQUE JS et Streamlit
 try:
-    st.markdown("""<style>header{display:none !important;}footer{display:none !important;}.stDeployButton{display:none !important;}#MainMenu{display:none !important;}div[data-testid="stToolbar"]{display:none !important;}iframe[height="0"]{display:none !important;}</style>""", unsafe_allow_html=True)
+    st.markdown("<style>header{display:none !important;}footer{display:none !important;}.stDeployButton{display:none !important;}#MainMenu{display:none !important;}div[data-testid='stToolbar']{display:none !important;}iframe[height='0']{display:none !important;}</style>", unsafe_allow_html=True)
 except:
     pass
 
