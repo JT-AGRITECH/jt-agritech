@@ -2339,44 +2339,68 @@ elif "ELEVEURS" in menu:
 
 elif "AJOUTER ELEVEUR" in menu:
  st.markdown("### ➕ AJOUTER ELEVEUR")
- # Champ ajouté - permet d'enchainer ajout eleveur (demande Rosine - ne rien modifier d'autre)
+ # Fix enchaînement V2 - efface auto + anti-doublon + dashboard (demande Rosine - ne rien modifier d'autre)
  if 'just_added_complet' not in st.session_state:
   st.session_state['just_added_complet'] = ""
  if st.session_state['just_added_complet']:
-  st.success(f"✅ {st.session_state['just_added_complet']} AJOUTÉ + MISE EN BAC enregistrée !")
-  st.info("👇 Tu peux ajouter un nouvel éleveur ci-dessous")
-  if st.button("➕ AJOUTER UN NOUVEAU ELEVEUR", type="primary", use_container_width=True, key="btn_new_eleveur_complet"):
-   st.session_state['just_added_complet'] = ""
-   st.rerun()
+  st.success(f"✅ {st.session_state['just_added_complet']} AJOUTÉ ! Total: {len(df)} éleveurs")
+  st.info(f"📊 Tableau mis à jour: {len(df)} éleveurs | {int(df['bacs'].sum()) if not df.empty and 'bacs' in df.columns else 0} bacs")
+  c1,c2=st.columns(2)
+  with c1:
+   if st.button("➕ AJOUTER UN NOUVEAU ELEVEUR", type="primary", use_container_width=True, key="btn_new_complet"):
+    st.session_state['just_added_complet'] = ""
+    for k in ["comp_nom","comp_prenom","comp_tel","comp_quartier","comp_check"]:
+     if k in st.session_state:
+      del st.session_state[k]
+    st.rerun()
+  with c2:
+   if st.button("📊 VOIR TABLEAU DE BORD", use_container_width=True, key="btn_dash_complet"):
+    st.session_state['just_added_complet'] = ""
+    st.rerun()
  with st.form("ajout"):
-  nom=st.text_input("NOM *")
-  prenom=st.text_input("PRÉNOM *")
-  tel_brut=st.text_input("CONTACTS * (6XXXXXXXX)")
-  quartier=st.text_input("LOCALITÉ *")
+  nom=st.text_input("NOM *", key="comp_nom")
+  prenom=st.text_input("PRÉNOM *", key="comp_prenom")
+  tel_brut=st.text_input("CONTACTS * (6XXXXXXXX)", key="comp_tel")
+  quartier=st.text_input("LOCALITÉ *", key="comp_quartier")
   bacs=st.number_input("NBRE DE BACS", min_value=1, value=2)
   date_mise_bac=st.date_input("🧬 DATE MISE EN BAC *", value=date.today(), format="DD/MM/YYYY")
   pay=st.selectbox("STATUT PAIEMENT", ["NON PAYÉ","PAYÉ","PARTIEL"])
   cyc_preview = calculer_cycle_hannetons(date_mise_bac)
   if cyc_preview:
    st.info(f"Retrait: {cyc_preview['RETRAIT_GENITEURS'].strftime('%d/%m/%Y')} | Récolte/Livraison/Renouv: {cyc_preview['RECOLTE'].strftime('%d/%m/%Y')} | Paiement: {cyc_preview['PAIEMENT'].strftime('%d/%m/%Y')}")
-  # CHAMP AJOUTÉ - Permet d'ajouter nouveau juste après
-  ajouter_nouveau_complet = st.checkbox("➕ Ajouter un nouvel éleveur juste après celui-ci", value=False, help="Coche pour enchaîner avec un autre éleveur après validation")
+  ajouter_nouveau_complet = st.checkbox("➕ Ajouter un nouvel éleveur juste après celui-ci (efface auto)", value=False, key="comp_check")
   if st.form_submit_button("✅ ENREGISTRER", type="primary", use_container_width=True):
    if nom and tel_brut:
-    cyc = calculer_cycle_hannetons(date_mise_bac)
-    new={"nom":nom,"prenom":prenom,"telephone":format_tel_auto(tel_brut),"quartier":quartier,"bacs":bacs,"date_mise_en_bac":str(date_mise_bac),"date_recolte":str(cyc["RECOLTE"]) if cyc else "","date_livraison":str(cyc["LIVRAISON"]) if cyc else "","statut_livraison":"EN ATTENTE","statut_paiement":pay,"statut_recolte":"NON LIVRÉE","latitude":"","longitude":"","piece_jointe":"","statut_geniteurs":"EN COURS"}
-    df=pd.concat([df,pd.DataFrame([new])],ignore_index=True)
-    df.to_excel(fichier,index=False)
-    new_mise={"id": len(df_mise)+1,"date_mise_en_bac": str(date_mise_bac),"bacs": bacs,"nombre_geniteurs": 10,"eleveur": f"{nom} {prenom}","quartier": quartier,"notes": "Créé depuis fiche eleveur","date_retrait_geniteurs": str(cyc["RETRAIT_GENITEURS"]) if cyc else "","date_recolte": str(cyc["RECOLTE"]) if cyc else "","date_livraison": str(cyc["LIVRAISON"]) if cyc else "","date_paiement": str(cyc["PAIEMENT"]) if cyc else "","date_renouvellement": str(cyc["RENOUVELLEMENT"]) if cyc else "","statut": "EN COURS"}
-    df_mise=pd.concat([df_mise,pd.DataFrame([new_mise])],ignore_index=True)
-    df_mise.to_excel(fichier_mise,index=False)
-    if ajouter_nouveau_complet:
-     st.session_state['just_added_complet'] = nom
-     st.balloons()
-     st.rerun()
+    tel_formate = format_tel_auto(tel_brut)
+    existe=False
+    if not df.empty:
+     for _, r in df.iterrows():
+      if str(r['nom']).upper()==nom.upper() and str(r['prenom']).upper()==prenom.upper():
+       existe=True
+       break
+    if existe:
+     st.warning(f"⚠️ {nom} {prenom} existe déjà!")
     else:
-     st.success(f"{nom} AJOUTÉ + MISE EN BAC enregistrée")
-     st.balloons()
+     cyc = calculer_cycle_hannetons(date_mise_bac)
+     new={"nom":nom,"prenom":prenom,"telephone":tel_formate,"quartier":quartier,"bacs":bacs,"date_mise_en_bac":str(date_mise_bac),"date_recolte":str(cyc["RECOLTE"]) if cyc else "","date_livraison":str(cyc["LIVRAISON"]) if cyc else "","statut_livraison":"EN ATTENTE","statut_paiement":pay,"statut_recolte":"NON LIVRÉE","latitude":"","longitude":"","piece_jointe":"","statut_geniteurs":"EN COURS"}
+     df=pd.concat([df,pd.DataFrame([new])],ignore_index=True)
+     df.to_excel(fichier,index=False)
+     new_mise={"id": len(df_mise)+1,"date_mise_en_bac": str(date_mise_bac),"bacs": bacs,"nombre_geniteurs": 10,"eleveur": f"{nom} {prenom}","quartier": quartier,"notes": "Créé depuis fiche eleveur","date_retrait_geniteurs": str(cyc["RETRAIT_GENITEURS"]) if cyc else "","date_recolte": str(cyc["RECOLTE"]) if cyc else "","date_livraison": str(cyc["LIVRAISON"]) if cyc else "","date_paiement": str(cyc["PAIEMENT"]) if cyc else "","date_renouvellement": str(cyc["RENOUVELLEMENT"]) if cyc else "","statut": "EN COURS"}
+     df_mise=pd.concat([df_mise,pd.DataFrame([new_mise])],ignore_index=True)
+     df_mise.to_excel(fichier_mise,index=False)
+     if ajouter_nouveau_complet:
+      st.session_state['just_added_complet'] = f"{nom} {prenom}"
+      for k in ["comp_nom","comp_prenom","comp_tel","comp_quartier"]:
+       if k in st.session_state:
+        st.session_state[k] = ""
+      st.balloons()
+      st.rerun()
+     else:
+      st.success(f"✅ {nom} {prenom} AJOUTÉ | Total: {len(df)} éleveurs")
+      st.balloons()
+      for k in ["comp_nom","comp_prenom","comp_tel","comp_quartier"]:
+       if k in st.session_state:
+        st.session_state[k] = ""
    else:
     st.error("NOM ET CONTACTS OBLIGATOIRES")
 
