@@ -114,6 +114,17 @@ else:
  df=pd.DataFrame(columns=cols)
 for c in cols:
  if c not in df.columns: df[c]=""
+# NETTOYAGE AUTO DOUBLONS EXACTS - supprime NAGMO D. BERNARD en double (tous champs identiques)
+if not df.empty:
+ before=len(df)
+ df=df.drop_duplicates(keep='first').reset_index(drop=True)
+ after=len(df)
+ if before!=after:
+  try:
+   df.to_excel(fichier,index=False)
+  except:
+   pass
+
 
 cols_mise=["id","date_mise_en_bac","bacs","nombre_geniteurs","eleveur","quartier","notes","date_retrait_geniteurs","date_recolte","date_livraison","date_paiement","date_renouvellement","statut"]
 if fichier_mise.exists():
@@ -7236,4 +7247,3 @@ elif "SAUVEGARDE" in menu:
             📅 Nom avec date et heure
         </div>
         """, unsafe_allow_html=True)
-
