@@ -15,7 +15,7 @@ from reportlab.lib.units import inch
 APP_DIR = Path(__file__).parent
 PIECES_DIR = APP_DIR / "pieces_jointes"
 PIECES_DIR.mkdir(exist_ok=True)
-st.set_page_config(page_title="JT-AGRITECH", page_icon="🌱", layout="wide")
+st.set_page_config(page_title="JT-AGRITECH", page_icon="logo.png", layout="wide")
 
 # 🔒 LIEN SÛR POUR ÉLEVEURS - Détection ?role=eleveur
 # Si lien sûr utilisé, affiche seulement session éleveur
@@ -1659,20 +1659,9 @@ def calculer_prime(fidelite_score, total_ca):
 
 
 
-# 🔧 MASQUE CODE JS VISIBLE comme none + MASQUE EXTENSION STREAMLIT
+# MASQUE JS et STREAMLIT
 try:
-    st.markdown("""
-    <style>
-    header {visibility:hidden !important; display:none !important;}
-    footer {visibility:hidden !important; display:none !important;}
-    .stDeployButton {display:none !important;}
-    #MainMenu {display:none !important;}
-    div[data-testid="stToolbar"] {display:none !important;}
-    div[data-testid="stDecoration"] {display:none !important;}
-    div[data-testid="stStatusWidget"] {display:none !important;}
-    iframe[height="0"] {display:none !important; height:0 !important; visibility:hidden !important;}
-    </style>
-    """, unsafe_allow_html=True)
+    st.markdown("""<style>header{display:none !important;}footer{display:none !important;}.stDeployButton{display:none !important;}#MainMenu{display:none !important;}div[data-testid="stToolbar"]{display:none !important;}iframe[height="0"]{display:none !important;}</style>""", unsafe_allow_html=True)
 except:
     pass
 
