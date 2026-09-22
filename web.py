@@ -1,5 +1,4 @@
 
-
 import streamlit as st
 import pandas as pd
 from pathlib import Path
@@ -2340,6 +2339,15 @@ elif "ELEVEURS" in menu:
 
 elif "AJOUTER ELEVEUR" in menu:
  st.markdown("### ➕ AJOUTER ELEVEUR")
+ # Champ ajouté - permet d'enchainer ajout eleveur (demande Rosine - ne rien modifier d'autre)
+ if 'just_added_complet' not in st.session_state:
+  st.session_state['just_added_complet'] = ""
+ if st.session_state['just_added_complet']:
+  st.success(f"✅ {st.session_state['just_added_complet']} AJOUTÉ + MISE EN BAC enregistrée !")
+  st.info("👇 Tu peux ajouter un nouvel éleveur ci-dessous")
+  if st.button("➕ AJOUTER UN NOUVEAU ELEVEUR", type="primary", use_container_width=True, key="btn_new_eleveur_complet"):
+   st.session_state['just_added_complet'] = ""
+   st.rerun()
  with st.form("ajout"):
   nom=st.text_input("NOM *")
   prenom=st.text_input("PRÉNOM *")
@@ -2351,6 +2359,8 @@ elif "AJOUTER ELEVEUR" in menu:
   cyc_preview = calculer_cycle_hannetons(date_mise_bac)
   if cyc_preview:
    st.info(f"Retrait: {cyc_preview['RETRAIT_GENITEURS'].strftime('%d/%m/%Y')} | Récolte/Livraison/Renouv: {cyc_preview['RECOLTE'].strftime('%d/%m/%Y')} | Paiement: {cyc_preview['PAIEMENT'].strftime('%d/%m/%Y')}")
+  # CHAMP AJOUTÉ - Permet d'ajouter nouveau juste après
+  ajouter_nouveau_complet = st.checkbox("➕ Ajouter un nouvel éleveur juste après celui-ci", value=False, help="Coche pour enchaîner avec un autre éleveur après validation")
   if st.form_submit_button("✅ ENREGISTRER", type="primary", use_container_width=True):
    if nom and tel_brut:
     cyc = calculer_cycle_hannetons(date_mise_bac)
@@ -2360,8 +2370,13 @@ elif "AJOUTER ELEVEUR" in menu:
     new_mise={"id": len(df_mise)+1,"date_mise_en_bac": str(date_mise_bac),"bacs": bacs,"nombre_geniteurs": 10,"eleveur": f"{nom} {prenom}","quartier": quartier,"notes": "Créé depuis fiche eleveur","date_retrait_geniteurs": str(cyc["RETRAIT_GENITEURS"]) if cyc else "","date_recolte": str(cyc["RECOLTE"]) if cyc else "","date_livraison": str(cyc["LIVRAISON"]) if cyc else "","date_paiement": str(cyc["PAIEMENT"]) if cyc else "","date_renouvellement": str(cyc["RENOUVELLEMENT"]) if cyc else "","statut": "EN COURS"}
     df_mise=pd.concat([df_mise,pd.DataFrame([new_mise])],ignore_index=True)
     df_mise.to_excel(fichier_mise,index=False)
-    st.success(f"{nom} AJOUTÉ + MISE EN BAC enregistrée")
-    st.balloons()
+    if ajouter_nouveau_complet:
+     st.session_state['just_added_complet'] = nom
+     st.balloons()
+     st.rerun()
+    else:
+     st.success(f"{nom} AJOUTÉ + MISE EN BAC enregistrée")
+     st.balloons()
    else:
     st.error("NOM ET CONTACTS OBLIGATOIRES")
 
