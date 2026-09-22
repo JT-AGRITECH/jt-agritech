@@ -17,28 +17,6 @@ PIECES_DIR = APP_DIR / "pieces_jointes"
 PIECES_DIR.mkdir(exist_ok=True)
 st.set_page_config(page_title="JT-AGRITECH SOLUTIONS", page_icon="🌱", layout="wide")
 
-
-# ===== PWA INVISIBLE - NE S'AFFICHE PAS COMME CODE =====
-try:
-    import streamlit.components.v1 as components
-    # Ce code est invisible, il ne s'affiche pas comme texte
-    components.html("""
-    <script>
-    // PWA Install logic - invisible
-    let deferredPrompt = null;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      // On pourrait afficher un bouton ici si besoin
-      console.log('PWA install disponible');
-    });
-    </script>
-    """, height=0)
-except:
-    pass
-
-
-
 def find_file(names):
  for n in names:
   p=APP_DIR/n
@@ -126,10 +104,6 @@ fichier_audit = APP_DIR / "audit_trail.xlsx"
 fichier_primes = APP_DIR / "primes_fidelite.xlsx"
 fichier_export_ohada = APP_DIR / "export_ohada"
 fichier_export_ohada.mkdir(exist_ok=True) if not fichier_export_ohada.exists() else None
-fichier_carte_fidelite = APP_DIR / "carte_fidelite.xlsx"
-fichier_sms = APP_DIR / "notifications_sms.xlsx"
-fichier_avis = APP_DIR / "avis_eleveurs.xlsx"
-
 
 
 cols=["nom","prenom","telephone","quartier","bacs","date_mise_en_bac","date_recolte","date_livraison","statut_livraison","statut_paiement","statut_recolte","latitude","longitude","piece_jointe","statut_geniteurs"]
@@ -222,34 +196,7 @@ if fichier_primes.exists():
 else:
  df_primes=pd.DataFrame(columns=cols_primes)
 for c in cols_primes:
- if c not in df_primes.columns: df_primes[c]=""
-
-cols_carte_fidelite=["id","eleveur","nom","prenom","telephone","quartier","points","total_bacs","total_kg","niveau","reduction_pct","date_creation","derniere_maj","statut_carte","numero_carte"]
-if fichier_carte_fidelite.exists():
- try: df_carte_fidelite=pd.read_excel(fichier_carte_fidelite)
- except: df_carte_fidelite=pd.DataFrame(columns=cols_carte_fidelite)
-else:
- df_carte_fidelite=pd.DataFrame(columns=cols_carte_fidelite)
-for c in cols_carte_fidelite:
- if c not in df_carte_fidelite.columns: df_carte_fidelite[c]=""
-
-cols_sms=["id","date_envoi","eleveur","telephone","type_sms","message","statut","whatsapp_lu","raison_sms","cout_fcfa","operateur"]
-if fichier_sms.exists():
- try: df_sms=pd.read_excel(fichier_sms)
- except: df_sms=pd.DataFrame(columns=cols_sms)
-else:
- df_sms=pd.DataFrame(columns=cols_sms)
-for c in cols_sms:
- if c not in df_sms.columns: df_sms[c]=""
-
-cols_avis=["id","date_avis","eleveur","nom","prenom","quartier","note","temoignage","type_avis","autorisation_pub","statut","photo_path","video_path"]
-if fichier_avis.exists():
- try: df_avis=pd.read_excel(fichier_avis)
- except: df_avis=pd.DataFrame(columns=cols_avis)
-else:
- df_avis=pd.DataFrame(columns=cols_avis)
-for c in cols_avis:
- if c not in df_avis.columns: df_avis[c]=""
+ if c not in df_contrats.columns: df_contrats[c]=""
 
 try:
  df["bacs"]=pd.to_numeric(df["bacs"], errors='coerce').fillna(1).astype(int)
@@ -1628,123 +1575,6 @@ def calculer_prime(fidelite_score, total_ca):
     else:
         return 0
 
-def calculer_points_fidelite(nb_bacs, montant_fcfa):
-    try:
-        points = int(nb_bacs)*10 + int(int(montant_fcfa)/1000)
-        return points
-    except:
-        return 0
-
-def calculer_niveau_fidelite(points):
-    if points >= 500:
-        return "DIAMANT", 15
-    elif points >= 300:
-        return "OR", 10
-    elif points >= 150:
-        return "ARGENT", 5
-    elif points >= 50:
-        return "BRONZE", 2
-    else:
-        return "DEBUTANT", 0
-
-def calculer_reduction_apres_bacs(total_bacs):
-    if total_bacs >= 100:
-        return 15, "15% apres 100 bacs"
-    elif total_bacs >= 50:
-        return 10, "10% apres 50 bacs"
-    elif total_bacs >= 20:
-        return 5, "5% apres 20 bacs"
-    elif total_bacs >= 10:
-        return 2, "2% apres 10 bacs"
-    else:
-        return 0, "Pas encore de reduction"
-
-def generer_numero_carte_fidelite():
-    from datetime import datetime
-    return f"FID-{datetime.now().strftime('%Y%m%d%H%M%S')}"
-
-def envoyer_sms_simulation(telephone, message, type_sms="RELANCE", raison="WhatsApp non lu"):
-    try:
-        tel = format_tel_auto(telephone)
-        return True, f"SMS simule vers {tel}: {message[:30]}... - Raison: {raison}"
-    except Exception as e:
-        return False, str(e)
-
-def generer_carte_fidelite_pdf(eleveur_row, carte_row):
-    try:
-        from reportlab.pdfgen import canvas
-        from reportlab.lib.pagesizes import A4
-        from reportlab.lib.utils import ImageReader
-        import io
-        buffer = io.BytesIO()
-        page_w, page_h = A4
-        c = canvas.Canvas(buffer, pagesize=A4)
-        c.setStrokeColor(colors.HexColor('#1b5e20'))
-        c.setLineWidth(2)
-        c.rect(10,10,page_w-20,page_h-20, stroke=1, fill=0)
-        try:
-            if logo_path and logo_path.exists():
-                from PIL import Image
-                logo_img = Image.open(str(logo_path)).convert("RGBA")
-                c.saveState()
-                c.setFillAlpha(0.08)
-                c.drawImage(ImageReader(logo_img), page_w/2-100, page_h/2-100, width=200, height=200, preserveAspectRatio=True, mask='auto')
-                c.restoreState()
-        except:
-            pass
-        c.setFont("Helvetica-Bold", 16)
-        c.setFillColor(colors.HexColor('#1b5e20'))
-        c.drawCentredString(page_w/2, page_h-40, "CARTE FIDELITE - JT-AGRITECH SOLUTIONS")
-        c.setFont("Helvetica-Bold", 10)
-        c.setFillColor(colors.HexColor('#ef6c00'))
-        c.drawCentredString(page_w/2, page_h-55, "AU SERVICE DES PAYSANS")
-        nom = f"{str(carte_row.get('nom','')).upper()} {carte_row.get('prenom','')}" if hasattr(carte_row, 'get') else "ELEVEUR"
-        numero = carte_row.get('numero_carte','FID-XXXX') if hasattr(carte_row, 'get') else "FID-XXXX"
-        points = carte_row.get('points',0) if hasattr(carte_row, 'get') else 0
-        niveau = carte_row.get('niveau','BRONZE') if hasattr(carte_row, 'get') else "BRONZE"
-        reduc = carte_row.get('reduction_pct',0) if hasattr(carte_row, 'get') else 0
-        total_bacs = carte_row.get('total_bacs',0) if hasattr(carte_row, 'get') else 0
-        c.setFont("Helvetica-Bold", 12)
-        c.setFillColor(colors.HexColor('#1a237e'))
-        c.drawString(50, page_h-90, f"Eleveur: {nom}")
-        c.setFont("Helvetica", 10)
-        c.setFillColor(colors.black)
-        c.drawString(50, page_h-110, f"Numero carte: {numero}")
-        c.drawString(50, page_h-130, f"Telephone: {carte_row.get('telephone','') if hasattr(carte_row, 'get') else ''}")
-        c.drawString(50, page_h-150, f"Localite: {carte_row.get('quartier','') if hasattr(carte_row, 'get') else ''}")
-        c.drawString(50, page_h-170, f"Total Bacs: {total_bacs} - Points: {points}")
-        c.drawString(50, page_h-190, f"Niveau: {niveau} - Reduction: {reduc}%")
-        c.setFont("Helvetica-Bold", 11)
-        c.setFillColor(colors.HexColor('#2e7d32'))
-        c.drawString(50, page_h-220, "AVANTAGES FIDELITE:")
-        c.setFont("Helvetica", 9)
-        c.setFillColor(colors.black)
-        avantages = [
-            "BRONZE (50 pts): 2% reduction + SMS rappels",
-            "ARGENT (150 pts): 5% reduction + formation gratuite",
-            "OR (300 pts): 10% reduction + livraison gratuite + prime",
-            "DIAMANT (500 pts): 15% reduction + tout gratuit + VIP"
-        ]
-        y = page_h-240
-        for av in avantages:
-            c.drawString(60, y, f"- {av}")
-            y -= 15
-        c.setFont("Helvetica", 7)
-        c.setFillColor(colors.HexColor('#888888'))
-        from datetime import date, datetime
-        c.drawCentredString(page_w/2, 30, f"Carte generee le {date.today().strftime('%d/%m/%Y')} - JT-AGRITECH - Points cumulables - Non cessible")
-        c.showPage()
-        c.save()
-        buffer.seek(0)
-        return buffer
-    except Exception as e:
-        import io
-        buffer = io.BytesIO()
-        buffer.write(f"Erreur carte {e}".encode())
-        buffer.seek(0)
-        return buffer
-
-
 
 
 with st.sidebar:
@@ -1773,9 +1603,6 @@ with st.sidebar:
   "📝 AUDIT TRAIL",
   "📱 PWA MOBILE",
   "☁️ CLOUD AUTO",
-  "💳 CARTE FIDELITE",
-  "🔔 NOTIFICATIONS SMS",
-  "⭐ AVIS ELEVEURS",
   "💬 WHATSAPP",
   "📍 GÉOLOCALISATION",
   "🗺️ PLANNING TOURNEES",
@@ -6936,6 +6763,7 @@ elif "MULTI-UTILISATEURS" in menu:
         st.info("Aucun utilisateur")
         if st.button("CREER ADMIN PAR DEFAUT", type="primary", use_container_width=True):
             admin_row = {"id": f"USR-{datetime.now().strftime('%Y%m%d%H%M%S')}", "nom": "Admin", "prenom": "JT-AGRITECH", "email": "admin@jt-agritech.com", "telephone": "2376XXXXXXXX", "role": "ADMIN", "username": "admin", "password_hash": "admin123_hash", "droits": "ALL", "actif": "OUI", "date_creation": date.today().strftime('%Y-%m-%d'), "derniere_connexion": ""}
+            global df_utilisateurs
             df_utilisateurs = pd.concat([df_utilisateurs, pd.DataFrame([admin_row])], ignore_index=True)
             df_utilisateurs.to_excel(fichier_utilisateurs, index=False)
             st.success("Admin cree admin/admin123")
@@ -6954,6 +6782,7 @@ elif "MULTI-UTILISATEURS" in menu:
             actif_u = st.selectbox("Actif", ["OUI","NON"])
         if st.form_submit_button("CREER UTILISATEUR", type="primary", use_container_width=True):
             new_r = {"id": f"USR-{datetime.now().strftime('%Y%m%d%H%M%S')}", "nom": nom_u, "prenom": prenom_u, "email": "", "telephone": "", "role": role_u, "username": username_u, "password_hash": f"{pwd_u}_hash", "droits": role_u, "actif": actif_u, "date_creation": date.today().strftime('%Y-%m-%d'), "derniere_connexion": ""}
+            global df_utilisateurs
             df_utilisateurs = pd.concat([df_utilisateurs, pd.DataFrame([new_r])], ignore_index=True)
             df_utilisateurs.to_excel(fichier_utilisateurs, index=False)
             log_audit("CREATION UTILISATEUR", "MULTI-UTILISATEURS", f"{username_u} - {role_u}")
@@ -6997,7 +6826,7 @@ elif "CLOUD AUTO" in menu:
     if st.button("LANCER SAUVEGARDE CLOUD MAINTENANT", type="primary", use_container_width=True):
         zip_buf = io.BytesIO()
         with zipfile.ZipFile(zip_buf, 'w', zipfile.ZIP_DEFLATED) as zf:
-            for fp in [fichier, fichier_mise, fichier_stock_geniteurs, fichier_photos, fichier_formations, fichier_impayes, fichier_contrats, fichier_utilisateurs, fichier_audit, fichier_primes, fichier_carte_fidelite, fichier_sms, fichier_avis]:
+            for fp in [fichier, fichier_mise, fichier_stock_geniteurs, fichier_photos, fichier_formations, fichier_impayes, fichier_contrats, fichier_utilisateurs, fichier_audit, fichier_primes]:
                 try:
                     if hasattr(fp, 'exists') and fp.exists():
                         zf.write(fp, fp.name)
@@ -7028,180 +6857,9 @@ elif "CLOUD AUTO" in menu:
         st.balloons()
         st.success("🎉 TOUS MODULES OPERATIONNELS - PACK COMPLET PRO")
 
-
-elif "CARTE FIDELITE" in menu:
-    st.markdown("## 💳 CARTE FIDELITE ELEVEUR - points, reductions apres X bacs")
-    tab_f1, tab_f2, tab_f3 = st.tabs(["CARTES", "POINTS & NIVEAUX", "REDUCTIONS"])
-    with tab_f1:
-        if df.empty:
-            st.warning("Aucun eleveur")
-        else:
-            if st.button("GENERER/MAJ TOUTES LES CARTES FIDELITE", type="primary", use_container_width=True, key="btn_gen_cartes_fid"):
-                try:
-                    cartes = []
-                    for _, r in df.iterrows():
-                        bacs = int(r.get('bacs',0)) if str(r.get('bacs','')).replace('.','',1).isdigit() else 1
-                        montant = bacs * 5000
-                        points = calculer_points_fidelite(bacs, montant)
-                        niveau, reduc_pct = calculer_niveau_fidelite(points)
-                        reduc_bacs, desc_reduc = calculer_reduction_apres_bacs(bacs)
-                        reduc_finale = max(reduc_pct, reduc_bacs)
-                        cartes.append({
-                            "id": f"CARD-{str(r.get('nom',''))[:3].upper()}-{datetime.now().strftime('%Y%m%d%H%M%S%f')[:10]}",
-                            "eleveur": f"{r.get('nom','')} {r.get('prenom','')}",
-                            "nom": r.get('nom',''),
-                            "prenom": r.get('prenom',''),
-                            "telephone": r.get('telephone',''),
-                            "quartier": r.get('quartier',''),
-                            "points": points,
-                            "total_bacs": bacs,
-                            "total_kg": bacs,
-                            "niveau": niveau,
-                            "reduction_pct": reduc_finale,
-                            "date_creation": date.today().strftime('%Y-%m-%d'),
-                            "derniere_maj": datetime.now().strftime('%Y-%m-%d %H:%M'),
-                            "statut_carte": "ACTIVE",
-                            "numero_carte": generer_numero_carte_fidelite()
-                        })
-                    df_carte_new = pd.DataFrame(cartes)
-                    df_carte_new.to_excel(fichier_carte_fidelite, index=False)
-                    st.success(f"{len(cartes)} cartes generees")
-                    log_audit("GENERATION CARTES FIDELITE", "CARTE FIDELITE", f"{len(cartes)} cartes")
-                    st.dataframe(df_carte_new, use_container_width=True, hide_index=True)
-                except Exception as e:
-                    st.error(f"Erreur: {e}")
-            if fichier_carte_fidelite.exists():
-                try:
-                    df_cartes_exist = pd.read_excel(fichier_carte_fidelite)
-                    st.dataframe(df_cartes_exist, use_container_width=True, hide_index=True)
-                except:
-                    pass
-    with tab_f2:
-        st.markdown("POINTS: 10 pts/bac + 1 pt/1000 FCFA | DEBUTANT 0-49 0% | BRONZE 50-149 2% | ARGENT 150-299 5% | OR 300-499 10% | DIAMANT 500+ 15%")
-    with tab_f3:
-        st.markdown("REDUCTIONS: 10 bacs 2% | 20 bacs 5% | 50 bacs 10% | 100 bacs 15%")
-
-elif "NOTIFICATIONS SMS" in menu:
-    st.markdown("## 🔔 NOTIFICATIONS SMS - si WhatsApp non lu")
-    tab_sms1, tab_sms2, tab_sms3 = st.tabs(["ENVOYER SMS", "HISTORIQUE SMS", "CONFIGURATION"])
-    with tab_sms1:
-        if df.empty:
-            st.warning("Aucun eleveur")
-        else:
-            col_s1, col_s2 = st.columns(2)
-            with col_s1:
-                eleveur_sms = st.selectbox("ELEVEUR", df["nom"].astype(str) + " " + df["prenom"].astype(str), key="eleveur_sms2")
-                type_sms = st.selectbox("TYPE SMS", ["RAPPEL RECOLTE", "RAPPEL PAIEMENT", "LIVRAISON", "FIDELITE", "RELANCE GENERALE"], key="type_sms2")
-                whatsapp_lu = st.selectbox("WHATSAPP LU ?", ["NON - 24h sans lecture", "NON - 48h", "OUI mais pas repondu", "NON - Pas de WhatsApp"], key="wa_lu2")
-            with col_s2:
-                tel_sms = st.text_input("TELEPHONE", key="tel_sms2")
-                operateur = st.selectbox("OPERATEUR", ["MTN", "ORANGE", "CAMTEL", "AUTO"], key="operateur_sms2")
-                raison_sms = st.text_area("RAISON SMS", value="WhatsApp non lu apres 24h", height=80, key="raison_sms2")
-            msg_sms_final = st.text_area("MESSAGE SMS (max 160 caracteres)", value="JT-AGRITECH: Bonjour {nom}, rappel {bacs} bacs prevu {date}. Tel: 6XX", height=100, key="msg_sms_final2")
-            if st.button("ENVOYER SMS SIMULATION", type="primary", use_container_width=True, key="btn_sms_sim"):
-                try:
-                    idx_e = 0
-                    row_e = df.iloc[idx_e] if not df.empty else {}
-                    tel_final = tel_sms if tel_sms else str(row_e.get('telephone',''))
-                    msg_perso = msg_sms_final.replace("{nom}", str(row_e.get('nom',''))).replace("{bacs}", str(row_e.get('bacs',''))).replace("{date}", date.today().strftime('%d/%m/%Y'))
-                    success, detail = envoyer_sms_simulation(tel_final, msg_perso, type_sms, raison_sms)
-                    new_sms = {
-                        "id": f"SMS-{datetime.now().strftime('%Y%m%d%H%M%S%f')}",
-                        "date_envoi": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                        "eleveur": eleveur_sms,
-                        "telephone": tel_final,
-                        "type_sms": type_sms,
-                        "message": msg_perso[:160],
-                        "statut": "ENVOYE" if success else "ECHEC",
-                        "whatsapp_lu": whatsapp_lu,
-                        "raison_sms": raison_sms,
-                        "cout_fcfa": 25 if len(msg_perso)<=160 else 50,
-                        "operateur": operateur
-                    }
-                    df_sms_new = pd.concat([df_sms, pd.DataFrame([new_sms])], ignore_index=True)
-                    df_sms_new.to_excel(fichier_sms, index=False)
-                    st.success(f"{detail} - Cout: {new_sms['cout_fcfa']} FCFA")
-                    log_audit("ENVOI SMS", "NOTIFICATIONS SMS", f"SMS {type_sms} vers {eleveur_sms}")
-                except Exception as e:
-                    st.error(f"Erreur SMS: {e}")
-    with tab_sms2:
-        if df_sms.empty:
-            st.info("Aucun SMS")
-        else:
-            st.dataframe(df_sms.sort_values("date_envoi", ascending=False).head(100), use_container_width=True, hide_index=True)
-            st.download_button("EXPORTER SMS CSV", df_sms.to_csv(index=False).encode('utf-8'), file_name=f"SMS_{date.today()}.csv", mime="text/csv", use_container_width=True)
-    with tab_sms3:
-        st.markdown("CONFIG API SMS Orange / MTN / Twilio - Simulation actuelle - Log Excel")
-
-elif "AVIS ELEVEURS" in menu:
-    st.markdown("## ⭐ AVIS ELEVEURS - temoignages pour marketing")
-    tab_avis1, tab_avis2, tab_avis3 = st.tabs(["AVIS", "AJOUTER AVIS", "MARKETING"])
-    with tab_avis1:
-        if df_avis.empty:
-            st.info("Aucun avis - Ajoutez temoignages")
-        else:
-            k1,k2,k3,k4 = st.columns(4)
-            with k1:
-                st.metric("Total avis", len(df_avis))
-            with k2:
-                note_moy = pd.to_numeric(df_avis["note"], errors='coerce').mean() if "note" in df_avis.columns else 0
-                st.metric("Note moyenne", f"{note_moy:.1f}/5" if not pd.isna(note_moy) else "N/A")
-            with k3:
-                st.metric("5 etoiles", len(df_avis[pd.to_numeric(df_avis["note"], errors='coerce')==5]) if "note" in df_avis.columns else 0)
-            with k4:
-                st.metric("Autorises pub", len(df_avis[df_avis["autorisation_pub"]=="OUI"]) if "autorisation_pub" in df_avis.columns else 0)
-            for _, avis in df_avis.sort_values("date_avis", ascending=False).head(20).iterrows():
-                note = int(avis.get('note',5)) if str(avis.get('note','')).isdigit() else 5
-                etoiles = "⭐" * note
-                st.markdown(f"**{etoiles} {note}/5 - {avis.get('nom','')} - {avis.get('quartier','')}** - {avis.get('temoignage','')}")
-            st.dataframe(df_avis, use_container_width=True, hide_index=True)
-            st.download_button("EXPORTER AVIS CSV", df_avis.to_csv(index=False).encode('utf-8'), file_name=f"AVIS_{date.today()}.csv", mime="text/csv", use_container_width=True)
-    with tab_avis2:
-        with st.form("form_avis2"):
-            col_a1, col_a2 = st.columns(2)
-            with col_a1:
-                nom_avis = st.text_input("NOM ELEVEUR", key="nom_avis2")
-                prenom_avis = st.text_input("PRENOM", key="prenom_avis2")
-                quartier_avis = st.text_input("LOCALITE", key="quartier_avis2")
-                telephone_avis = st.text_input("TELEPHONE", key="tel_avis2")
-            with col_a2:
-                note_avis = st.selectbox("NOTE", [5,4,3,2,1], format_func=lambda x: f"{'⭐'*x} {x}/5", key="note_avis2")
-                type_avis = st.selectbox("TYPE AVIS", ["ELEVEUR ACTIF", "NOUVEL ELEVEUR", "ANCIEN ELEVEUR", "PARTENAIRE"], key="type_avis2")
-                autorisation_pub = st.selectbox("AUTORISATION PUB ?", ["OUI - Autorise", "NON - Prive"], key="autorisation_pub2")
-                statut_avis = st.selectbox("STATUT", ["PUBLIE", "EN ATTENTE", "PRIVE"], key="statut_avis2")
-            temoignage = st.text_area("TEMOIGNAGE (2-3 phrases)", placeholder="JT-AGRITECH m'a change la vie! 20 bacs = 100,000 FCFA/mois.", height=120, key="temoignage_avis2")
-            submitted_avis = st.form_submit_button("ENREGISTRER AVIS", type="primary", use_container_width=True)
-            if submitted_avis:
-                try:
-                    new_avis = {
-                        "id": f"AVIS-{datetime.now().strftime('%Y%m%d%H%M%S%f')}",
-                        "date_avis": date.today().strftime('%Y-%m-%d'),
-                        "eleveur": f"{nom_avis} {prenom_avis}",
-                        "nom": nom_avis,
-                        "prenom": prenom_avis,
-                        "quartier": quartier_avis,
-                        "note": note_avis,
-                        "temoignage": temoignage,
-                        "type_avis": type_avis,
-                        "autorisation_pub": "OUI" if "OUI" in autorisation_pub else "NON",
-                        "statut": statut_avis,
-                        "photo_path": "",
-                        "video_path": ""
-                    }
-                    df_avis_new = pd.concat([df_avis, pd.DataFrame([new_avis])], ignore_index=True)
-                    df_avis_new.to_excel(fichier_avis, index=False)
-                    log_audit("CREATION AVIS", "AVIS ELEVEURS", f"Avis {note_avis}/5 par {nom_avis}")
-                    st.success(f"Avis enregistre {note_avis}/5 - {nom_avis}")
-                    st.balloons()
-                except Exception as e:
-                    st.error(f"Erreur avis: {e}")
-    with tab_avis3:
-        st.markdown("MARKETING: Publiez temoignages 5 etoiles sur Facebook avec photo, Boost 5000 FCFA = 10000 vues, Affiche '100+ eleveurs satisfaits - Note 4.8/5', QR code")
-
 elif "SAUVEGARDE" in menu:
 
     # ===== PROPOSITION PROFESSIONNELLE RUBRIQUE SAUVEGARDE =====
-
     st.markdown("""
     <style>
     .sauvegarde-header {background:linear-gradient(135deg, #0d47a1 0%, #1976d2 40%, #42a5f5 100%); padding:25px; border-radius:20px; color:white; text-align:center; margin-bottom:25px; box-shadow:0 10px 30px rgba(13,71,161,0.3);}
