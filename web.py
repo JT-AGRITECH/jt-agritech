@@ -1658,6 +1658,24 @@ def calculer_prime(fidelite_score, total_ca):
 
 
 
+
+# 🔧 MASQUE CODE JS VISIBLE comme none + MASQUE EXTENSION STREAMLIT
+try:
+    st.markdown("""
+    <style>
+    header {visibility:hidden !important; display:none !important;}
+    footer {visibility:hidden !important; display:none !important;}
+    .stDeployButton {display:none !important;}
+    #MainMenu {display:none !important;}
+    div[data-testid="stToolbar"] {display:none !important;}
+    div[data-testid="stDecoration"] {display:none !important;}
+    div[data-testid="stStatusWidget"] {display:none !important;}
+    iframe[height="0"] {display:none !important; height:0 !important; visibility:hidden !important;}
+    </style>
+    """, unsafe_allow_html=True)
+except:
+    pass
+
 with st.sidebar:
  if logo_path: st.image(str(logo_path),width=90)
  st.markdown("### JT-AGRITECH")
