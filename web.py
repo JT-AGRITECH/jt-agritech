@@ -1593,7 +1593,7 @@ with st.sidebar:
 
  if logo_path: st.image(str(logo_path),width=90)
  st.markdown("### JT-AGRITECH SOLUTIONS")
- st.markdown("#### 📂 RUBRIQUES PAR CATÉGORIE")
+ # Rubriques groupées par catégorie (titres supprimés - section recherche inactive)
  
  # Groupement par catégorie - ne modifie rien d'autre, garde noms exacts pour compatibilité
  CATEGORIES = {
@@ -1608,7 +1608,7 @@ with st.sidebar:
  if 'selected_category' not in st.session_state:
   st.session_state['selected_category'] = "🏠 TABLEAU DE BORD & ANALYSES"
  
- selected_category = st.selectbox("📂 CATÉGORIE", list(CATEGORIES.keys()), index=list(CATEGORIES.keys()).index(st.session_state['selected_category']) if st.session_state['selected_category'] in CATEGORIES else 0, key="cat_select")
+ selected_category = st.selectbox("", list(CATEGORIES.keys()), index=list(CATEGORIES.keys()).index(st.session_state['selected_category']) if st.session_state['selected_category'] in CATEGORIES else 0, key="cat_select", label_visibility="collapsed")
  st.session_state['selected_category'] = selected_category
  
  # Affiche rubriques de la catégorie sélectionnée
@@ -1631,6 +1631,33 @@ with st.sidebar:
  for cat, items in CATEGORIES.items():
   if cat != selected_category:
    st.caption(f"{cat}: {len(items)} rubriques")
+ 
+ # SECTION RECHERCHE EN BAS DES CATEGORIES - AJOUT DEMANDÉ (ne rien modifier d'autre)
+ st.divider()
+ st.markdown("**🔍 RECHERCHE RAPIDE**")
+ recherche_rubrique = st.text_input("Rechercher une rubrique", placeholder="Ex: finance, whatsapp, bac...", key="search_rubrique_sidebar", label_visibility="collapsed")
+ if recherche_rubrique:
+  # Recherche dans toutes les rubriques
+  all_rubriques = []
+  for items in CATEGORIES.values():
+   all_rubriques.extend(items)
+  resultats = [r for r in all_rubriques if recherche_rubrique.lower() in r.lower()]
+  if resultats:
+   st.markdown(f"*{len(resultats)} résultat(s):*")
+   # Affiche résultats comme radio pour sélection directe
+   choix_recherche = st.radio("Résultats", resultats, key="radio_search_results", label_visibility="collapsed")
+   if choix_recherche:
+    # Met à jour la sélection
+    st.session_state['menu_selection'] = choix_recherche
+    # Trouve catégorie du résultat et met à jour
+    for cat, items in CATEGORIES.items():
+     if choix_recherche in items:
+      st.session_state['selected_category'] = cat
+      break
+    # Force rerun pour naviguer vers résultat
+    st.rerun()
+  else:
+   st.caption(f"Aucun résultat pour '{recherche_rubrique}'")
 
 c1,c2=st.columns([1,4])
 with c1:
