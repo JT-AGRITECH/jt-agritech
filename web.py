@@ -17,6 +17,24 @@ PIECES_DIR = APP_DIR / "pieces_jointes"
 PIECES_DIR.mkdir(exist_ok=True)
 st.set_page_config(page_title="JT-AGRITECH SOLUTIONS", page_icon="🌱", layout="wide")
 
+# 🔒 LIEN SÛR POUR ÉLEVEURS - Détection ?role=eleveur
+# Si lien sûr utilisé, affiche seulement session éleveur
+try:
+    query_params = st.query_params
+    role_param = query_params.get("role", "")
+    # Compatibilité liste ou string
+    if isinstance(role_param, list):
+        role_param = role_param[0] if role_param else ""
+    IS_ELEVEUR_PORTAL = (role_param == "eleveur")
+except:
+    IS_ELEVEUR_PORTAL = False
+
+# Si portail éleveur, on force menu à ELEVEURS seulement
+if IS_ELEVEUR_PORTAL:
+    # Cache CSS pour mode éleveur - garde simple
+    pass
+
+
 def find_file(names):
  for n in names:
   p=APP_DIR/n
@@ -1592,38 +1610,50 @@ with st.sidebar:
  if logo_path: st.image(str(logo_path),width=90)
  st.markdown("### JT-AGRITECH SOLUTIONS")
  
- # Groupement par catégorie - V9 simplifié - sans session_state compliqué - accès direct OK
- CATEGORIES = {
-  "🏠 TABLEAU DE BORD & ANALYSES": ["📊 TABLEAU DE BORD", "📊 BUSINESS INTELLIGENCE", "📈 STATISTIQUES CA", "🏆 CLASSEMENT ELEVEURS"],
-  "👨‍🌾 ÉLEVEURS & PRODUCTION": ["👨‍🌾 ELEVEURS", "➕ AJOUTER ELEVEUR", "🧬 MISE EN BAC", "🧬 STOCK GENITEURS", "📸 SUIVI PHOTOS", "🎓 FORMATION"],
-  "💰 FINANCES & CONTRATS": ["💵 FINANCES COMPTABLE", "💳 IMPAYES & RELANCES", "📄 CONTRATS", "🧾 FACTURES/DEVIS", "💰 EXPORT OHADA"],
-  "📱 COMMUNICATION & TERRAIN": ["🔔 RAPPELS AUTO", "💬 WHATSAPP", "📍 GÉOLOCALISATION", "🗺️ PLANNING TOURNEES"],
-  "⚙️ SYSTÈME & SÉCURITÉ": ["👥 MULTI-UTILISATEURS", "📝 AUDIT TRAIL", "📱 PWA MOBILE", "☁️ CLOUD AUTO", "💾 SAUVEGARDE"]
- }
- 
- # Liste complète pour recherche
- all_rubriques = []
- for items in CATEGORIES.values():
-  all_rubriques.extend(items)
- 
- # Recherche en bas des catégories
- recherche_rubrique = st.text_input("🔍 Recherche rubrique", placeholder="Ex: finance, whatsapp, bac...", key="search_rubrique_sidebar")
- 
- if recherche_rubrique:
-  resultats = [r for r in all_rubriques if recherche_rubrique.lower() in r.lower()]
-  if resultats:
-   st.markdown(f"**{len(resultats)} résultat(s):**")
-   menu = st.radio("Résultats recherche", resultats, key="menu_search", label_visibility="collapsed")
-  else:
-   st.caption(f"Aucun résultat pour '{recherche_rubrique}'")
-   selected_category = st.selectbox("", list(CATEGORIES.keys()), key="cat_select_no_result", label_visibility="collapsed")
-   menu = st.radio(selected_category, CATEGORIES[selected_category], key="menu_radio_no_result", label_visibility="collapsed")
+ if IS_ELEVEUR_PORTAL:
+  st.markdown("### 👨‍🌾 PORTAIL ÉLEVEUR")
+  st.success("🔒 Accès sécurisé éleveur")
+  st.info("Entrez votre téléphone pour voir votre fiche")
+  # En mode éleveur, menu forcé à ELEVEURS uniquement
+  CATEGORIES = {
+   "👨‍🌾 MON ESPACE ÉLEVEUR": ["👨‍🌾 ELEVEURS", "📊 TABLEAU DE BORD"]
+  }
+  all_rubriques = ["👨‍🌾 ELEVEURS", "📊 TABLEAU DE BORD"]
+  menu = st.radio("Mon espace", ["👨‍🌾 ELEVEURS", "📊 TABLEAU DE BORD"], key="menu_eleveur_portal", label_visibility="collapsed")
+  st.divider()
+  st.caption("📱 JT-AGRITECH - Au service des paysans")
+  st.caption("🔗 Lien sûr: jt-agritech.streamlit.app/?role=eleveur")
  else:
-  selected_category = st.selectbox("", list(CATEGORIES.keys()), key="cat_select", label_visibility="collapsed")
-  menu = st.radio(selected_category, CATEGORIES[selected_category], key="menu_radio", label_visibility="collapsed")
- 
- st.divider()
- st.caption("💡 Astuce: Tape dans recherche pour trouver vite")
+  # Mode admin normal - 24 rubriques groupées
+  CATEGORIES = {
+   "🏠 TABLEAU DE BORD & ANALYSES": ["📊 TABLEAU DE BORD", "📊 BUSINESS INTELLIGENCE", "📈 STATISTIQUES CA", "🏆 CLASSEMENT ELEVEURS"],
+   "👨‍🌾 ÉLEVEURS & PRODUCTION": ["👨‍🌾 ELEVEURS", "➕ AJOUTER ELEVEUR", "🧬 MISE EN BAC", "🧬 STOCK GENITEURS", "📸 SUIVI PHOTOS", "🎓 FORMATION"],
+   "💰 FINANCES & CONTRATS": ["💵 FINANCES COMPTABLE", "💳 IMPAYES & RELANCES", "📄 CONTRATS", "🧾 FACTURES/DEVIS", "💰 EXPORT OHADA"],
+   "📱 COMMUNICATION & TERRAIN": ["🔔 RAPPELS AUTO", "💬 WHATSAPP", "📍 GÉOLOCALISATION", "🗺️ PLANNING TOURNEES"],
+   "⚙️ SYSTÈME & SÉCURITÉ": ["👥 MULTI-UTILISATEURS", "📝 AUDIT TRAIL", "📱 PWA MOBILE", "☁️ CLOUD AUTO", "💾 SAUVEGARDE"]
+  }
+  
+  all_rubriques = []
+  for items in CATEGORIES.values():
+   all_rubriques.extend(items)
+  
+  recherche_rubrique = st.text_input("🔍 Recherche rubrique", placeholder="Ex: finance, whatsapp, bac...", key="search_rubrique_sidebar")
+  
+  if recherche_rubrique:
+   resultats = [r for r in all_rubriques if recherche_rubrique.lower() in r.lower()]
+   if resultats:
+    st.markdown(f"**{len(resultats)} résultat(s):**")
+    menu = st.radio("Résultats recherche", resultats, key="menu_search", label_visibility="collapsed")
+   else:
+    st.caption(f"Aucun résultat pour '{recherche_rubrique}'")
+    selected_category = st.selectbox("", list(CATEGORIES.keys()), key="cat_select_no_result", label_visibility="collapsed")
+    menu = st.radio(selected_category, CATEGORIES[selected_category], key="menu_radio_no_result", label_visibility="collapsed")
+  else:
+   selected_category = st.selectbox("", list(CATEGORIES.keys()), key="cat_select", label_visibility="collapsed")
+   menu = st.radio(selected_category, CATEGORIES[selected_category], key="menu_radio", label_visibility="collapsed")
+  
+  st.divider()
+  st.caption("💡 Astuce: Tape dans recherche pour trouver vite")
 
 c1,c2=st.columns([1,4])
 with c1:
