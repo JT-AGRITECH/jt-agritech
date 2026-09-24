@@ -44,7 +44,6 @@ if not st.session_state.authenticated:
                 st.rerun()
             else:
                 st.error("Mot de passe incorrect")
-        st.info(f"Mot de passe genere pour test: {APP_PASSWORD}")
     st.stop()
 
 # PAGE BIENVENUE ANIMEE AVANT ENTREE DANS APPLICATION - GARDE V23 + 8 ELEVEURS + VRAI LOGO
