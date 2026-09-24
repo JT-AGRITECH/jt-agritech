@@ -48,7 +48,7 @@ if not st.session_state.entered_app:
     
     st.markdown("""
     <div class="welcome-container">
-        <div class="welcome-title">🌱 JT-AGRITECH SOLUTIONS</div>
+        <div class="welcome-title">🌱 JT-AGRITECH</div>
         <div class="welcome-subtitle">Au service des paysans</div>
         <div class="welcome-card">
             <p style="font-size:16px; color:#333; line-height:1.6; margin:0;">
@@ -100,9 +100,6 @@ if not st.session_state.entered_app:
         if st.button("🚀 ENTRER DANS L'APPLICATION", type="primary", use_container_width=True, key="enter_app_btn"):
             st.session_state.entered_app = True
             st.rerun()
-    
-    st.markdown("<p style='text-align:center; color:#999; font-size:12px; margin-top:30px;'>✨ Vrai logo JT-AGRITECH lors création raccourci | 8 éleveurs dans même dossier | Logo rouge Streamlit supprimé</p>", unsafe_allow_html=True)
-    
     st.stop()
 
 # FIN PAGE BIENVENUE ANIMEE - APP CONTINUE APRES
@@ -1825,9 +1822,9 @@ if "BIENVENUE" in menu:
   
   st.markdown("""
   <div class="welcome-hero">
-   <h1>🌱 JT-AGRITECH SOLUTIONS</h1>
+   <h1>🌱 JT-AGRITECH</h1>
    <p>Au service des paysans</p>
-   <p style="font-size:14px; opacity:0.9; margin-top:15px;">Plateforme de gestion des éleveurs d'escargots géants</p>
+   <p style="font-size:14px; opacity:0.9; margin-top:15px;">Plateforme de gestion des éleveurs d'HANNETONS ET d'ESCARGOTS</p>
   </div>
   """, unsafe_allow_html=True)
   
@@ -1853,7 +1850,7 @@ if "BIENVENUE" in menu:
    if affiche_path and affiche_path.exists():
     st.image(str(affiche_path), caption="JT-AGRITECH - Au service des paysans", use_container_width=True)
    else:
-    st.info("🌱 Bienvenue sur JT-AGRITECH SOLUTIONS - Gérez vos éleveurs, bacs, récoltes et paiements. Au service des paysans depuis 2024.")
+    st.info("🌱 Bienvenue sur JT-AGRITECH - Gérez vos éleveurs, bacs, récoltes et paiements. Au service des paysans depuis 2024.")
   
   st.divider()
   
@@ -1892,9 +1889,6 @@ if "BIENVENUE" in menu:
    st.warning("Aucun éleveur trouvé - Vérifiez eleveurs.xlsx (8 éleveurs) dans même dossier que web.py")
   
   st.divider()
-  st.success("✅ Vrai logo JT-AGRITECH lors création raccourci téléphone/tablette - Logo rouge Streamlit supprimé | 8 éleveurs dans même dossier que web.py")
-  st.caption("💡 Astuce supprimée | Portail bienvenue joli avec cartes éleveurs")
-  
  except Exception as e:
   st.error(f"Erreur portail bienvenue: {e}")
   st.info(f"Détails: {str(e)[:200]}")
