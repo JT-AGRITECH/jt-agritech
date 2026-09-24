@@ -1979,73 +1979,193 @@ with c2:
 st.divider()
 
 if "BIENVENUE" in menu or "ACCUEIL" in menu:
- # ACCUEIL DIRECT MODERNE - REMPLACE PORTAIL - 8 ELEVEURS VISIBLES + STATS RAPIDES - AUTRE CHOSE QUE PORTAIL
+ # PORTAIL AVEC DEUX SECTIONS - GESTION HANNETONS ET GESTION ESCARGOTS - RUBRIQUES ESCARGOTS
  try:
   st.markdown("""
   <style>
   .accueil-hero {background: linear-gradient(135deg, #225522 0%, #8fbc5f 100%); padding:30px; border-radius:20px; text-align:center; color:white; margin-bottom:20px;}
   .accueil-card {background:white; border-radius:15px; padding:20px; box-shadow:0 4px 12px rgba(34,85,34,0.08); border-left:5px solid #225522; margin-bottom:15px;}
+  .section-hannetons {background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); color:white; padding:20px; border-radius:15px; margin-bottom:15px; text-align:center;}
+  .section-escargots {background: linear-gradient(135deg, #225522 0%, #8fbc5f 100%); color:white; padding:20px; border-radius:15px; margin-bottom:15px; text-align:center;}
+  .rubrique-escargot {background:white; border-radius:12px; padding:15px; box-shadow:0 3px 10px rgba(34,85,34,0.08); border-left:4px solid #8fbc5f; margin-bottom:10px; transition:all 0.3s;}
+  .rubrique-escargot:hover {transform:translateY(-2px); box-shadow:0 6px 16px rgba(34,85,34,0.12);}
   </style>
   """, unsafe_allow_html=True)
   
   st.markdown("""
   <div class="accueil-hero">
    <h2 style="color:white; margin:0;">🌱 JT-AGRITECH</h2>
-   <p style="color:#e8f5d8; margin:5px 0 0 0; font-weight:700;">Au service des paysans - Hannetons et Escargots</p>
+   <p style="color:#e8f5d8; margin:5px 0 0 0; font-weight:700;">Au service des paysans - Deux filières</p>
   </div>
   """, unsafe_allow_html=True)
   
-  try:
-   total_e = len(df)
-   total_b = int(df["bacs"].sum()) if "bacs" in df.columns and not df.empty else 0
-   total_paye = len(df[df["statut_paiement"]=="Payé"]) if "statut_paiement" in df.columns and not df.empty else 0
-   total_livre = len(df[df["statut_livraison"]=="Livré"]) if "statut_livraison" in df.columns and not df.empty else 0
-  except:
-   total_e = 8
-   total_b = 69
-   total_paye = 3
-   total_livre = 3
+  # Deux sections au niveau portail
+  tab_hannetons, tab_escargots = st.tabs(["🪲 GESTION HANNETONS", "🐌 GESTION ESCARGOTS"])
   
-  c1,c2,c3,c4 = st.columns(4)
-  with c1:
-   st.metric("Éleveurs", total_e)
-  with c2:
-   st.metric("Bacs", total_b)
-  with c3:
-   st.metric("Livrés", total_livre)
-  with c4:
-   st.metric("Payés", total_paye)
-  
-  st.divider()
-  st.markdown("### Éleveurs - Accès Rapide")
-  
-  if not df.empty and "nom" in df.columns:
-   cols = st.columns(2)
-   for idx, row in df.iterrows():
-    with cols[idx % 2]:
-     nom = f"{str(row.get('nom','')).upper()} {str(row.get('prenom',''))}"
-     tel = str(row.get('telephone',''))
-     quartier = str(row.get('quartier',''))
-     bacs = str(row.get('bacs',''))
-     statut = str(row.get('statut_livraison',''))
-     couleur = "#25D366" if "Livr" in statut else "#FFA500"
-     st.markdown(f"""
-     <div class="accueil-card">
-      <div style="font-weight:800; color:#225522;">{nom}</div>
-      <div style="font-size:13px; color:#5a7a3a;">{quartier} | {bacs} bacs | {tel}</div>
-      <div style="margin-top:8px;"><span style="background:{couleur}; color:white; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:700;">{statut}</span></div>
-     </div>
-     """, unsafe_allow_html=True)
+  with tab_hannetons:
+   st.markdown("""
+   <div class="section-hannetons">
+    <h3 style="color:white; margin:0;">🪲 Section Hannetons</h3>
+    <p style="color:#FFE4B5; margin:5px 0 0 0; font-weight:600;">Élevage de hannetons - Bacs, alimentation, récolte</p>
+   </div>
+   """, unsafe_allow_html=True)
    
-   with st.expander("Tableau complet"):
-    st.dataframe(df.fillna(""), use_container_width=True)
-  else:
-   st.warning("Aucun éleveur - Vérifiez eleveurs.xlsx")
+   try:
+    total_e = len(df)
+    total_b = int(df["bacs"].sum()) if "bacs" in df.columns and not df.empty else 0
+   except:
+    total_e = 8
+    total_b = 69
+   
+   c1,c2,c3 = st.columns(3)
+   with c1:
+    st.metric("Éleveurs Hannetons", total_e)
+   with c2:
+    st.metric("Bacs Hannetons", total_b)
+   with c3:
+    st.metric("Filière", "Hannetons")
+   
+   st.divider()
+   st.markdown("### Éleveurs Hannetons - Accès Rapide")
+   
+   if not df.empty and "nom" in df.columns:
+    cols = st.columns(2)
+    for idx, row in df.iterrows():
+     with cols[idx % 2]:
+      nom = f"{str(row.get('nom','')).upper()} {str(row.get('prenom',''))}"
+      quartier = str(row.get('quartier',''))
+      bacs = str(row.get('bacs',''))
+      st.markdown(f"""
+      <div class="accueil-card" style="border-left-color:#8B4513;">
+       <div style="font-weight:800; color:#8B4513;">🪲 {nom}</div>
+       <div style="font-size:13px; color:#8B4513;">📍 {quartier} | 📦 {bacs} bacs hannetons</div>
+      </div>
+      """, unsafe_allow_html=True)
+   
+   st.info("Section Hannetons - Gestion bacs, alimentation, récolte hannetons")
   
-  st.info("Accueil direct remplace portail - Accès rapide aux 8 éleveurs")
+  with tab_escargots:
+   st.markdown("""
+   <div class="section-escargots">
+    <h3 style="color:white; margin:0;">🐌 Section Escargots</h3>
+    <p style="color:#e8f5d8; margin:5px 0 0 0; font-weight:600;">Élevage d'escargots géants - Filière complète</p>
+   </div>
+   """, unsafe_allow_html=True)
+   
+   try:
+    total_e = len(df)
+    total_b = int(df["bacs"].sum()) if "bacs" in df.columns and not df.empty else 0
+    total_paye = len(df[df["statut_paiement"]=="Payé"]) if "statut_paiement" in df.columns and not df.empty else 0
+    total_livre = len(df[df["statut_livraison"]=="Livré"]) if "statut_livraison" in df.columns and not df.empty else 0
+   except:
+    total_e = 8
+    total_b = 69
+    total_paye = 3
+    total_livre = 3
+   
+   c1,c2,c3,c4 = st.columns(4)
+   with c1:
+    st.metric("Éleveurs Escargots", total_e)
+   with c2:
+    st.metric("Bacs Escargots", total_b)
+   with c3:
+    st.metric("Livrés", total_livre)
+   with c4:
+    st.metric("Payés", total_paye)
+   
+   st.divider()
+   
+   # Rubriques necessaires pour section escargots
+   st.markdown("### 🐌 Rubriques Escargots - Gestion Complète")
+   
+   col1, col2 = st.columns(2)
+   
+   with col1:
+    st.markdown("""
+    <div class="rubrique-escargot">
+     <div style="font-weight:800; color:#225522;">📦 1. Bacs Escargots</div>
+     <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Gestion bacs, nettoyage, humidité, densité</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="rubrique-escargot">
+     <div style="font-weight:800; color:#225522;">🥬 2. Alimentation Escargots</div>
+     <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Feuilles, calcium, compléments, planning</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="rubrique-escargot">
+     <div style="font-weight:800; color:#225522;">🥚 3. Reproduction & Ponte</div>
+     <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Oeufs, incubation, éclosion, suivi</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="rubrique-escargot">
+     <div style="font-weight:800; color:#225522;">📏 4. Croissance & Tri</div>
+     <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Calibrage, tri par taille, suivi poids</div>
+    </div>
+    """, unsafe_allow_html=True)
+   
+   with col2:
+    st.markdown("""
+    <div class="rubrique-escargot">
+     <div style="font-weight:800; color:#225522;">🏥 5. Santé Escargots</div>
+     <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Maladies, prévention, traitements</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="rubrique-escargot">
+     <div style="font-weight:800; color:#225522;">💧 6. Récolte Escargots</div>
+     <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Récolte, lavage, conditionnement</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="rubrique-escargot">
+     <div style="font-weight:800; color:#225522;">💰 7. Vente & Paiement</div>
+     <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Ventes, paiements, factures, clients</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="rubrique-escargot">
+     <div style="font-weight:800; color:#225522;">📊 8. Statistiques Escargots</div>
+     <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Rendement, mortalité, bénéfices</div>
+    </div>
+    """, unsafe_allow_html=True)
+   
+   st.divider()
+   st.markdown("### Éleveurs Escargots - Liste")
+   
+   if not df.empty and "nom" in df.columns:
+    cols = st.columns(2)
+    for idx, row in df.iterrows():
+     with cols[idx % 2]:
+      nom = f"{str(row.get('nom','')).upper()} {str(row.get('prenom',''))}"
+      tel = str(row.get('telephone',''))
+      quartier = str(row.get('quartier',''))
+      bacs = str(row.get('bacs',''))
+      statut = str(row.get('statut_livraison',''))
+      couleur = "#25D366" if "Livr" in statut else "#FFA500"
+      st.markdown(f"""
+      <div class="accueil-card">
+       <div style="font-weight:800; color:#225522;">🐌 {nom}</div>
+       <div style="font-size:13px; color:#5a7a3a;">📍 {quartier} | 📦 {bacs} bacs | 📞 {tel}</div>
+       <div style="margin-top:8px;"><span style="background:{couleur}; color:white; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:700;">{statut}</span></div>
+      </div>
+      """, unsafe_allow_html=True)
+    
+    with st.expander("Tableau complet escargots"):
+     st.dataframe(df.fillna(""), use_container_width=True)
+  
+  st.success("Portail avec deux sections - Hannetons et Escargots - Rubriques escargots créées")
   
  except Exception as e:
-  st.error(f"Erreur accueil: {e}")
+  st.error(f"Erreur portail deux sections: {e}")
 if "TABLEAU DE BORD" in menu:
  total=len(df)
  total_bacs=int(df["bacs"].sum()) if total>0 else 0
