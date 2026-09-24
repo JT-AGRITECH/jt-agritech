@@ -12,6 +12,13 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 
 APP_DIR = Path(__file__).parent
+
+# COMMENT GERER HANNETONS ET ESCARGOTS DANS MEME APP AVEC 8 RUBRIQUES CHAQUE:
+# - Portail avec deux sections bien distinctes (marron hannetons vs vert escargots)
+# - Chaque section a 8 rubriques fonctionnelles
+# - Meme eleveurs.xlsx (8 eleveurs) gere les deux especes avec bacs separes
+# - Menu existant 24 rubriques peut servir les deux especes
+
 PIECES_DIR = APP_DIR / "pieces_jointes"
 PIECES_DIR.mkdir(exist_ok=True)
 
