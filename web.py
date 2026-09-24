@@ -15,6 +15,38 @@ APP_DIR = Path(__file__).parent
 PIECES_DIR = APP_DIR / "pieces_jointes"
 PIECES_DIR.mkdir(exist_ok=True)
 
+# MOT DE PASSE GENERE POUR ACCES APPLICATION - JT-HANNETONS-2026!
+APP_PASSWORD = "JT-HANNETONS-2026!"
+
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+    st.markdown("""
+    <style>
+    .password-container {background: linear-gradient(135deg, #225522 0%, #8fbc5f 100%); padding:40px; border-radius:20px; text-align:center; color:white; margin:50px 0;}
+    .password-title {color:white !important; font-size:28px; font-weight:900;}
+    </style>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    <div class="password-container">
+        <div class="password-title">🔐 ACCES SECURISE JT-AGRITECH</div>
+        <p style="color:#e8f5d8; margin-top:10px;">Plateforme de gestion des eleveurs d'HANNETONS ET d'ESCARGOTS</p>
+    </div>
+    """, unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        pwd_input = st.text_input("Mot de passe", type="password", key="pwd_input", placeholder="Entrez le mot de passe")
+        if st.button("🔓 ACCEDER", type="primary", use_container_width=True):
+            if pwd_input == APP_PASSWORD:
+                st.session_state.authenticated = True
+                st.success("Acces autorise!")
+                st.rerun()
+            else:
+                st.error("Mot de passe incorrect")
+        st.info(f"Mot de passe genere pour test: {APP_PASSWORD}")
+    st.stop()
+
 # PAGE BIENVENUE ANIMEE AVANT ENTREE DANS APPLICATION - GARDE V23 + 8 ELEVEURS + VRAI LOGO
 if "entered_app" not in st.session_state:
     st.session_state.entered_app = False
@@ -52,8 +84,8 @@ if not st.session_state.entered_app:
         <div class="welcome-subtitle">Au service des paysans</div>
         <div class="welcome-card">
             <p style="font-size:16px; color:#333; line-height:1.6; margin:0;">
-                Bienvenue sur votre plateforme de gestion des éleveurs d'escargots géants<br>
-                Gérez facilement vos <b>8 éleveurs</b>, bacs, récoltes et paiements<br>
+                Bienvenue sur votre plateforme de gestion des éleveurs d'hannetons et d'escargots<br>
+                
                 <span style="color:#5a7a3a; font-weight:700;">🌿 Cultivons l'avenir ensemble</span>
             </p>
         </div>
@@ -1850,7 +1882,7 @@ if "BIENVENUE" in menu:
    if affiche_path and affiche_path.exists():
     st.image(str(affiche_path), caption="JT-AGRITECH - Au service des paysans", use_container_width=True)
    else:
-    st.info("🌱 Bienvenue sur JT-AGRITECH - Gérez vos éleveurs, bacs, récoltes et paiements. Au service des paysans depuis 2024.")
+    st.info("🌱 .")
   
   st.divider()
   
