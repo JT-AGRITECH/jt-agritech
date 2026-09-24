@@ -1985,10 +1985,18 @@ if "BIENVENUE" in menu or "ACCUEIL" in menu:
   <style>
   .accueil-hero {background: linear-gradient(135deg, #225522 0%, #8fbc5f 100%); padding:30px; border-radius:20px; text-align:center; color:white; margin-bottom:20px;}
   .accueil-card {background:white; border-radius:15px; padding:20px; box-shadow:0 4px 12px rgba(34,85,34,0.08); border-left:5px solid #225522; margin-bottom:15px;}
-  .section-hannetons {background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); color:white; padding:20px; border-radius:15px; margin-bottom:15px; text-align:center;}
-  .section-escargots {background: linear-gradient(135deg, #225522 0%, #8fbc5f 100%); color:white; padding:20px; border-radius:15px; margin-bottom:15px; text-align:center;}
-  .rubrique-escargot {background:white; border-radius:12px; padding:15px; box-shadow:0 3px 10px rgba(34,85,34,0.08); border-left:4px solid #8fbc5f; margin-bottom:10px; transition:all 0.3s;}
-  .rubrique-escargot:hover {transform:translateY(-2px); box-shadow:0 6px 16px rgba(34,85,34,0.12);}
+  .section-hannetons-distinct {background: linear-gradient(135deg, #3E2723 0%, #8B4513 50%, #D2691E 100%); color:white; padding:25px; border-radius:20px; margin-bottom:20px; text-align:center; border:4px solid #FF9800; box-shadow:0 8px 24px rgba(139,69,19,0.3); position:relative; overflow:hidden;}
+  .section-hannetons-distinct::before {content:"🪲"; position:absolute; font-size:80px; opacity:0.1; right:20px; top:50%; transform:translateY(-50%);}
+  .section-escargots-distinct {background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #4CAF50 100%); color:white; padding:25px; border-radius:20px; margin-bottom:20px; text-align:center; border:4px solid #81C784; box-shadow:0 8px 24px rgba(27,94,32,0.3); position:relative; overflow:hidden;}
+  .section-escargots-distinct::before {content:"🐌"; position:absolute; font-size:80px; opacity:0.15; right:20px; top:50%; transform:translateY(-50%);}
+  .rubrique-escargot-distinct {background: linear-gradient(135deg, white 0%, #E8F5E9 100%); border-radius:15px; padding:18px; box-shadow:0 4px 12px rgba(27,94,32,0.1); border-left:6px solid #4CAF50; border-right:2px solid #C8E6C9; margin-bottom:12px; transition:all 0.3s; position:relative;}
+  .rubrique-escargot-distinct:hover {transform:translateY(-3px) scale(1.02); box-shadow:0 8px 20px rgba(27,94,32,0.15); border-left-color:#2E7D32; background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%);}
+  .rubrique-hanneton-distinct {background: linear-gradient(135deg, white 0%, #FFF3E0 100%); border-radius:15px; padding:18px; box-shadow:0 4px 12px rgba(139,69,19,0.1); border-left:6px solid #FF9800; border-right:2px solid #FFE0B2; margin-bottom:12px; transition:all 0.3s; position:relative;}
+  .rubrique-hanneton-distinct:hover {transform:translateY(-3px) scale(1.02); box-shadow:0 8px 20px rgba(139,69,19,0.15); border-left-color:#8B4513; background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);}
+  .accueil-card-hanneton {background: linear-gradient(135deg, white 0%, #FFF8E1 100%); border-radius:15px; padding:20px; box-shadow:0 4px 12px rgba(139,69,19,0.1); border-left:6px solid #8B4513; border-top:3px solid #FF9800; margin-bottom:15px; position:relative;}
+  .accueil-card-escargot {background: linear-gradient(135deg, white 0%, #E8F5E9 100%); border-radius:15px; padding:20px; box-shadow:0 4px 12px rgba(27,94,32,0.1); border-left:6px solid #2E7D32; border-top:3px solid #4CAF50; margin-bottom:15px; position:relative;}
+  .badge-hanneton {background: linear-gradient(135deg, #8B4513, #D2691E); color:white; padding:5px 12px; border-radius:20px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;}
+  .badge-escargot {background: linear-gradient(135deg, #2E7D32, #4CAF50); color:white; padding:5px 12px; border-radius:20px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;}
   </style>
   """, unsafe_allow_html=True)
   
@@ -2004,7 +2012,7 @@ if "BIENVENUE" in menu or "ACCUEIL" in menu:
   
   with tab_hannetons:
    st.markdown("""
-   <div class="section-hannetons">
+   <div class="section-hannetons-distinct">
     <h3 style="color:white; margin:0;">🪲 Section Hannetons</h3>
     <p style="color:#FFE4B5; margin:5px 0 0 0; font-weight:600;">Élevage de hannetons - Bacs, alimentation, récolte</p>
    </div>
@@ -2036,17 +2044,72 @@ if "BIENVENUE" in menu or "ACCUEIL" in menu:
       quartier = str(row.get('quartier',''))
       bacs = str(row.get('bacs',''))
       st.markdown(f"""
-      <div class="accueil-card" style="border-left-color:#8B4513;">
+      <div class="accueil-card-hanneton">
        <div style="font-weight:800; color:#8B4513;">🪲 {nom}</div>
        <div style="font-size:13px; color:#8B4513;">📍 {quartier} | 📦 {bacs} bacs hannetons</div>
       </div>
       """, unsafe_allow_html=True)
    
-   st.info("Section Hannetons - Gestion bacs, alimentation, récolte hannetons")
+   st.markdown("### 🪲 Rubriques Hannetons - Gestion Complète")
+   
+   col1, col2 = st.columns(2)
+   with col1:
+    st.markdown("""
+    <div class="rubrique-hanneton-distinct">
+     <div style="font-weight:800; color:#8B4513;">🪲 1. Bacs Hannetons</div>
+     <div style="font-size:12px; color:#BF360C; margin-top:5px;">Substrat, humidité, température, densité larves</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    <div class="rubrique-hanneton-distinct">
+     <div style="font-weight:800; color:#8B4513;">🍂 2. Alimentation Hannetons</div>
+     <div style="font-size:12px; color:#BF360C; margin-top:5px;">Matière organique, compost, feuilles mortes</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    <div class="rubrique-hanneton-distinct">
+     <div style="font-weight:800; color:#8B4513;">🔄 3. Cycle & Métamorphose</div>
+     <div style="font-size:12px; color:#BF360C; margin-top:5px;">Larve, nymphe, adulte, suivi stades</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    <div class="rubrique-hanneton-distinct">
+     <div style="font-weight:800; color:#8B4513;">📏 4. Tri & Calibrage</div>
+     <div style="font-size:12px; color:#BF360C; margin-top:5px;">Taille larves, sélection, tri</div>
+    </div>
+    """, unsafe_allow_html=True)
+   with col2:
+    st.markdown("""
+    <div class="rubrique-hanneton-distinct">
+     <div style="font-weight:800; color:#8B4513;">🏥 5. Santé Hannetons</div>
+     <div style="font-size:12px; color:#BF360C; margin-top:5px;">Parasites, maladies, prévention</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    <div class="rubrique-hanneton-distinct">
+     <div style="font-weight:800; color:#8B4513;">💧 6. Récolte Hannetons</div>
+     <div style="font-size:12px; color:#BF360C; margin-top:5px;">Récolte larves, nettoyage, conditionnement</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    <div class="rubrique-hanneton-distinct">
+     <div style="font-weight:800; color:#8B4513;">💰 7. Vente & Marché</div>
+     <div style="font-size:12px; color:#BF360C; margin-top:5px;">Ventes larves, prix, clients, export</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    <div class="rubrique-hanneton-distinct">
+     <div style="font-weight:800; color:#8B4513;">📊 8. Stats Hannetons</div>
+     <div style="font-size:12px; color:#BF360C; margin-top:5px;">Production, rentabilité, croissance</div>
+    </div>
+    """, unsafe_allow_html=True)
+   
+   st.divider()
+   st.info("🪲 Section Hannetons BIEN DISTINCTE - Couleur marron/orange - Gestion complète hannetons")
   
   with tab_escargots:
    st.markdown("""
-   <div class="section-escargots">
+   <div class="section-escargots-distinct">
     <h3 style="color:white; margin:0;">🐌 Section Escargots</h3>
     <p style="color:#e8f5d8; margin:5px 0 0 0; font-weight:600;">Élevage d'escargots géants - Filière complète</p>
    </div>
@@ -2082,28 +2145,28 @@ if "BIENVENUE" in menu or "ACCUEIL" in menu:
    
    with col1:
     st.markdown("""
-    <div class="rubrique-escargot">
+    <div class="rubrique-escargot-distinct">
      <div style="font-weight:800; color:#225522;">📦 1. Bacs Escargots</div>
      <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Gestion bacs, nettoyage, humidité, densité</div>
     </div>
     """, unsafe_allow_html=True)
     
     st.markdown("""
-    <div class="rubrique-escargot">
+    <div class="rubrique-escargot-distinct">
      <div style="font-weight:800; color:#225522;">🥬 2. Alimentation Escargots</div>
      <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Feuilles, calcium, compléments, planning</div>
     </div>
     """, unsafe_allow_html=True)
     
     st.markdown("""
-    <div class="rubrique-escargot">
+    <div class="rubrique-escargot-distinct">
      <div style="font-weight:800; color:#225522;">🥚 3. Reproduction & Ponte</div>
      <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Oeufs, incubation, éclosion, suivi</div>
     </div>
     """, unsafe_allow_html=True)
     
     st.markdown("""
-    <div class="rubrique-escargot">
+    <div class="rubrique-escargot-distinct">
      <div style="font-weight:800; color:#225522;">📏 4. Croissance & Tri</div>
      <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Calibrage, tri par taille, suivi poids</div>
     </div>
@@ -2111,28 +2174,28 @@ if "BIENVENUE" in menu or "ACCUEIL" in menu:
    
    with col2:
     st.markdown("""
-    <div class="rubrique-escargot">
+    <div class="rubrique-escargot-distinct">
      <div style="font-weight:800; color:#225522;">🏥 5. Santé Escargots</div>
      <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Maladies, prévention, traitements</div>
     </div>
     """, unsafe_allow_html=True)
     
     st.markdown("""
-    <div class="rubrique-escargot">
+    <div class="rubrique-escargot-distinct">
      <div style="font-weight:800; color:#225522;">💧 6. Récolte Escargots</div>
      <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Récolte, lavage, conditionnement</div>
     </div>
     """, unsafe_allow_html=True)
     
     st.markdown("""
-    <div class="rubrique-escargot">
+    <div class="rubrique-escargot-distinct">
      <div style="font-weight:800; color:#225522;">💰 7. Vente & Paiement</div>
      <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Ventes, paiements, factures, clients</div>
     </div>
     """, unsafe_allow_html=True)
     
     st.markdown("""
-    <div class="rubrique-escargot">
+    <div class="rubrique-escargot-distinct">
      <div style="font-weight:800; color:#225522;">📊 8. Statistiques Escargots</div>
      <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Rendement, mortalité, bénéfices</div>
     </div>
@@ -2152,7 +2215,7 @@ if "BIENVENUE" in menu or "ACCUEIL" in menu:
       statut = str(row.get('statut_livraison',''))
       couleur = "#25D366" if "Livr" in statut else "#FFA500"
       st.markdown(f"""
-      <div class="accueil-card">
+      <div class="accueil-card-escargot">
        <div style="font-weight:800; color:#225522;">🐌 {nom}</div>
        <div style="font-size:13px; color:#5a7a3a;">📍 {quartier} | 📦 {bacs} bacs | 📞 {tel}</div>
        <div style="margin-top:8px;"><span style="background:{couleur}; color:white; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:700;">{statut}</span></div>
@@ -2162,7 +2225,7 @@ if "BIENVENUE" in menu or "ACCUEIL" in menu:
     with st.expander("Tableau complet escargots"):
      st.dataframe(df.fillna(""), use_container_width=True)
   
-  st.success("Portail avec deux sections - Hannetons et Escargots - Rubriques escargots créées")
+  st.success("✅ Deux sections BIEN DISTINCTES - 🪲 Hannetons marron/orange | 🐌 Escargots vert - Rubriques séparées")
   
  except Exception as e:
   st.error(f"Erreur portail deux sections: {e}")
