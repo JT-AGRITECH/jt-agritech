@@ -84,7 +84,6 @@ if not st.session_state.entered_app:
         <div class="welcome-card">
             <p style="font-size:16px; color:#333; line-height:1.6; margin:0;">
                 Bienvenue sur votre plateforme de gestion des éleveurs d'hannetons et d'escargots<br>
-                
                 <span style="color:#5a7a3a; font-weight:700;">🌿 Cultivons l'avenir ensemble</span>
             </p>
         </div>
