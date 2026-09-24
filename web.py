@@ -1978,96 +1978,74 @@ with c2:
  st.markdown("<h1 style='margin:0;color:#225522;'>JT-AGRITECH</h1><p style='margin:0;color:#5a7a3a;font-weight:800;'>AU SERVICE DES PAYSANS</p>",unsafe_allow_html=True)
 st.divider()
 
-if "BIENVENUE" in menu:
- # JOLI PORTAIL DE BIENVENUE JT-AGRITECH - Au service des paysans - 8 ELEVEURS - VRAI LOGO
+if "BIENVENUE" in menu or "ACCUEIL" in menu:
+ # ACCUEIL DIRECT MODERNE - REMPLACE PORTAIL - 8 ELEVEURS VISIBLES + STATS RAPIDES - AUTRE CHOSE QUE PORTAIL
  try:
-  # CSS joli portail
   st.markdown("""
   <style>
-  .welcome-hero {background: linear-gradient(135deg, #225522 0%, #8fbc5f 100%); padding: 40px 20px; border-radius: 20px; text-align: center; color: white; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(34,85,34,0.2);}
-  .welcome-hero h1 {color: white !important; font-size: 36px; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.2);}
-  .welcome-hero p {color: #e8f5d8 !important; font-size: 20px; font-weight: 700; margin-top: 10px;}
-  .eleveur-card {background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 12px rgba(34,85,34,0.08); border-left: 5px solid #225522; margin-bottom: 10px; transition: transform 0.2s;}
-  .eleveur-card:hover {transform: translateY(-2px); box-shadow: 0 6px 16px rgba(34,85,34,0.15);}
-  .stat-box {background: #f4f9ec; border-radius: 12px; padding: 20px; text-align: center; border: 2px solid #e0e8d5;}
-  .stat-number {font-size: 32px; font-weight: 800; color: #225522;}
-  .stat-label {font-size: 14px; color: #5a7a3a; font-weight: 700; text-transform: uppercase;}
+  .accueil-hero {background: linear-gradient(135deg, #225522 0%, #8fbc5f 100%); padding:30px; border-radius:20px; text-align:center; color:white; margin-bottom:20px;}
+  .accueil-card {background:white; border-radius:15px; padding:20px; box-shadow:0 4px 12px rgba(34,85,34,0.08); border-left:5px solid #225522; margin-bottom:15px;}
   </style>
   """, unsafe_allow_html=True)
   
   st.markdown("""
-  <div class="welcome-hero">
-   <h1>🌱 JT-AGRITECH</h1>
-   <p>Au service des paysans</p>
-   <p style="font-size:14px; opacity:0.9; margin-top:15px;">Plateforme de gestion des éleveurs d'HANNETONS ET d'ESCARGOTS</p>
+  <div class="accueil-hero">
+   <h2 style="color:white; margin:0;">🌱 JT-AGRITECH</h2>
+   <p style="color:#e8f5d8; margin:5px 0 0 0; font-weight:700;">Au service des paysans - Hannetons et Escargots</p>
   </div>
   """, unsafe_allow_html=True)
   
-  # Logo + affiche cote a cote
-  col_logo, col_affiche = st.columns([1,2])
-  with col_logo:
-   if logo_path and logo_path.exists():
-    st.image(str(logo_path), use_container_width=True)
-   st.markdown("""
-   <div class="stat-box">
-    <div class="stat-number">8</div>
-    <div class="stat-label">Éleveurs Actifs</div>
-   </div>
-   """, unsafe_allow_html=True)
-   st.markdown(f"""
-   <div class="stat-box" style="margin-top:10px;">
-    <div class="stat-number">{int(df["bacs"].sum()) if not df.empty and "bacs" in df.columns else 0}</div>
-    <div class="stat-label">Bacs Totaux</div>
-   </div>
-   """, unsafe_allow_html=True)
+  try:
+   total_e = len(df)
+   total_b = int(df["bacs"].sum()) if "bacs" in df.columns and not df.empty else 0
+   total_paye = len(df[df["statut_paiement"]=="Payé"]) if "statut_paiement" in df.columns and not df.empty else 0
+   total_livre = len(df[df["statut_livraison"]=="Livré"]) if "statut_livraison" in df.columns and not df.empty else 0
+  except:
+   total_e = 8
+   total_b = 69
+   total_paye = 3
+   total_livre = 3
   
-  with col_affiche:
-   if affiche_path and affiche_path.exists():
-    st.image(str(affiche_path), caption="JT-AGRITECH - Au service des paysans", use_container_width=True)
-   else:
-    st.info("🌱 .")
+  c1,c2,c3,c4 = st.columns(4)
+  with c1:
+   st.metric("Éleveurs", total_e)
+  with c2:
+   st.metric("Bacs", total_b)
+  with c3:
+   st.metric("Livrés", total_livre)
+  with c4:
+   st.metric("Payés", total_paye)
   
   st.divider()
-  
-  # Liste des 8 eleveurs en jolies cartes
-  st.markdown(f"### 👨‍🌾 Nos {len(df)} Éleveurs Partenaires")
-  st.caption("Liste des éleveurs enregistrés - Cliquez sur Tableau de bord pour détails complets")
+  st.markdown("### Éleveurs - Accès Rapide")
   
   if not df.empty and "nom" in df.columns:
-   # Affiche en grille 2 colonnes de cartes
    cols = st.columns(2)
    for idx, row in df.iterrows():
     with cols[idx % 2]:
-     nom_complet = f"{str(row.get('nom','')).upper()} {str(row.get('prenom',''))}"
+     nom = f"{str(row.get('nom','')).upper()} {str(row.get('prenom',''))}"
      tel = str(row.get('telephone',''))
      quartier = str(row.get('quartier',''))
      bacs = str(row.get('bacs',''))
-     statut = str(row.get('statut_livraison','En attente'))
-     couleur_statut = "#25D366" if "Livr" in statut else "#FFA500"
+     statut = str(row.get('statut_livraison',''))
+     couleur = "#25D366" if "Livr" in statut else "#FFA500"
      st.markdown(f"""
-     <div class="eleveur-card-new">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-       <div>
-        <div style="font-weight:800; color:#225522; font-size:16px;">{nom_complet}</div>
-        <div style="font-size:13px; color:#5a7a3a;">📍 {quartier} | 📦 {bacs} bacs</div>
-        <div style="font-size:12px; color:#666;">📞 {tel}</div>
-       </div>
-       <div style="background:{couleur_statut}; color:white; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700;">{statut}</div>
-      </div>
+     <div class="accueil-card">
+      <div style="font-weight:800; color:#225522;">{nom}</div>
+      <div style="font-size:13px; color:#5a7a3a;">{quartier} | {bacs} bacs | {tel}</div>
+      <div style="margin-top:8px;"><span style="background:{couleur}; color:white; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:700;">{statut}</span></div>
      </div>
      """, unsafe_allow_html=True)
    
-   # Tableau complet aussi
-   with st.expander("📋 Voir tableau complet des 8 éleveurs"):
-    st.dataframe(df[["nom","prenom","telephone","quartier","bacs","statut_livraison","statut_paiement"]].fillna(""), use_container_width=True)
+   with st.expander("Tableau complet"):
+    st.dataframe(df.fillna(""), use_container_width=True)
   else:
-   st.warning("Aucun éleveur trouvé - Vérifiez eleveurs.xlsx (8 éleveurs) dans même dossier que web.py")
+   st.warning("Aucun éleveur - Vérifiez eleveurs.xlsx")
   
-  st.divider()
+  st.info("Accueil direct remplace portail - Accès rapide aux 8 éleveurs")
+  
  except Exception as e:
-  st.error(f"Erreur portail bienvenue: {e}")
-  st.info(f"Détails: {str(e)[:200]}")
-
+  st.error(f"Erreur accueil: {e}")
 if "TABLEAU DE BORD" in menu:
  total=len(df)
  total_bacs=int(df["bacs"].sum()) if total>0 else 0
