@@ -1714,24 +1714,97 @@ with c2:
 st.divider()
 
 if "BIENVENUE" in menu:
- # PORTAIL DE BIENVENUE JT-AGRITECH - Au service des paysans
+ # JOLI PORTAIL DE BIENVENUE JT-AGRITECH - Au service des paysans - 8 ELEVEURS - VRAI LOGO
  try:
-  st.markdown("<h1 style='text-align:center; color:#225522;'>🌱 BIENVENUE CHEZ JT-AGRITECH SOLUTIONS</h1><p style='text-align:center; color:#5a7a3a; font-weight:800; font-size:18px;'>Au service des paysans</p>", unsafe_allow_html=True)
-  st.divider()
-  c1,c2,c3 = st.columns([1,2,1])
-  with c2:
+  # CSS joli portail
+  st.markdown("""
+  <style>
+  .welcome-hero {background: linear-gradient(135deg, #225522 0%, #8fbc5f 100%); padding: 40px 20px; border-radius: 20px; text-align: center; color: white; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(34,85,34,0.2);}
+  .welcome-hero h1 {color: white !important; font-size: 36px; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.2);}
+  .welcome-hero p {color: #e8f5d8 !important; font-size: 20px; font-weight: 700; margin-top: 10px;}
+  .eleveur-card {background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 12px rgba(34,85,34,0.08); border-left: 5px solid #225522; margin-bottom: 10px; transition: transform 0.2s;}
+  .eleveur-card:hover {transform: translateY(-2px); box-shadow: 0 6px 16px rgba(34,85,34,0.15);}
+  .stat-box {background: #f4f9ec; border-radius: 12px; padding: 20px; text-align: center; border: 2px solid #e0e8d5;}
+  .stat-number {font-size: 32px; font-weight: 800; color: #225522;}
+  .stat-label {font-size: 14px; color: #5a7a3a; font-weight: 700; text-transform: uppercase;}
+  </style>
+  """, unsafe_allow_html=True)
+  
+  st.markdown("""
+  <div class="welcome-hero">
+   <h1>🌱 JT-AGRITECH SOLUTIONS</h1>
+   <p>Au service des paysans</p>
+   <p style="font-size:14px; opacity:0.9; margin-top:15px;">Plateforme de gestion des éleveurs d'escargots géants</p>
+  </div>
+  """, unsafe_allow_html=True)
+  
+  # Logo + affiche cote a cote
+  col_logo, col_affiche = st.columns([1,2])
+  with col_logo:
    if logo_path and logo_path.exists():
     st.image(str(logo_path), use_container_width=True)
-  st.markdown("### 🏠 Portail de Bienvenue")
-  st.info("Bienvenue sur la plateforme JT-AGRITECH SOLUTIONS - Au service des paysans. Gérez vos éleveurs, bacs, récoltes et paiements.")
-  if affiche_path and affiche_path.exists():
-   st.image(str(affiche_path), caption="JT-AGRITECH - Au service des paysans", use_container_width=True)
-  st.markdown(f"### 👨‍🌾 {len(df)} Éleveurs enregistrés (8 éleveurs)")
-  if not df.empty:
-   st.dataframe(df[["nom","prenom","telephone","quartier","bacs"]].fillna(""), use_container_width=True)
-  st.success("✅ Vrai logo JT-AGRITECH lors création raccourci téléphone/tablette - Logo rouge Streamlit supprimé")
+   st.markdown("""
+   <div class="stat-box">
+    <div class="stat-number">8</div>
+    <div class="stat-label">Éleveurs Actifs</div>
+   </div>
+   """, unsafe_allow_html=True)
+   st.markdown(f"""
+   <div class="stat-box" style="margin-top:10px;">
+    <div class="stat-number">{int(df["bacs"].sum()) if not df.empty and "bacs" in df.columns else 0}</div>
+    <div class="stat-label">Bacs Totaux</div>
+   </div>
+   """, unsafe_allow_html=True)
+  
+  with col_affiche:
+   if affiche_path and affiche_path.exists():
+    st.image(str(affiche_path), caption="JT-AGRITECH - Au service des paysans", use_container_width=True)
+   else:
+    st.info("🌱 Bienvenue sur JT-AGRITECH SOLUTIONS - Gérez vos éleveurs, bacs, récoltes et paiements. Au service des paysans depuis 2024.")
+  
+  st.divider()
+  
+  # Liste des 8 eleveurs en jolies cartes
+  st.markdown(f"### 👨‍🌾 Nos {len(df)} Éleveurs Partenaires")
+  st.caption("Liste des éleveurs enregistrés - Cliquez sur Tableau de bord pour détails complets")
+  
+  if not df.empty and "nom" in df.columns:
+   # Affiche en grille 2 colonnes de cartes
+   cols = st.columns(2)
+   for idx, row in df.iterrows():
+    with cols[idx % 2]:
+     nom_complet = f"{str(row.get('nom','')).upper()} {str(row.get('prenom',''))}"
+     tel = str(row.get('telephone',''))
+     quartier = str(row.get('quartier',''))
+     bacs = str(row.get('bacs',''))
+     statut = str(row.get('statut_livraison','En attente'))
+     couleur_statut = "#25D366" if "Livr" in statut else "#FFA500"
+     st.markdown(f"""
+     <div class="eleveur-card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+       <div>
+        <div style="font-weight:800; color:#225522; font-size:16px;">{nom_complet}</div>
+        <div style="font-size:13px; color:#5a7a3a;">📍 {quartier} | 📦 {bacs} bacs</div>
+        <div style="font-size:12px; color:#666;">📞 {tel}</div>
+       </div>
+       <div style="background:{couleur_statut}; color:white; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700;">{statut}</div>
+      </div>
+     </div>
+     """, unsafe_allow_html=True)
+   
+   # Tableau complet aussi
+   with st.expander("📋 Voir tableau complet des 8 éleveurs"):
+    st.dataframe(df[["nom","prenom","telephone","quartier","bacs","statut_livraison","statut_paiement"]].fillna(""), use_container_width=True)
+  else:
+   st.warning("Aucun éleveur trouvé - Vérifiez eleveurs.xlsx (8 éleveurs) dans même dossier que web.py")
+  
+  st.divider()
+  st.success("✅ Vrai logo JT-AGRITECH lors création raccourci téléphone/tablette - Logo rouge Streamlit supprimé | 8 éleveurs dans même dossier que web.py")
+  st.caption("💡 Astuce supprimée | Portail bienvenue joli avec cartes éleveurs")
+  
  except Exception as e:
-  st.error(f"Erreur portail: {e}")
+  st.error(f"Erreur portail bienvenue: {e}")
+  st.info(f"Détails: {str(e)[:200]}")
 
 if "TABLEAU DE BORD" in menu:
  total=len(df)
