@@ -1677,6 +1677,7 @@ with st.sidebar:
  else:
   # Mode admin normal - 24 rubriques groupées
   CATEGORIES = {
+   "🏠 PORTAIL BIENVENUE": ["🏠 BIENVENUE"],
    "🏠 TABLEAU DE BORD & ANALYSES": ["📊 TABLEAU DE BORD", "📊 BUSINESS INTELLIGENCE", "📈 STATISTIQUES CA", "🏆 CLASSEMENT ELEVEURS"],
    "👨‍🌾 ÉLEVEURS & PRODUCTION": ["👨‍🌾 ELEVEURS", "➕ AJOUTER ELEVEUR", "🧬 MISE EN BAC", "🧬 STOCK GENITEURS", "📸 SUIVI PHOTOS", "🎓 FORMATION"],
    "💰 FINANCES & CONTRATS": ["💵 FINANCES COMPTABLE", "💳 IMPAYES & RELANCES", "📄 CONTRATS", "🧾 FACTURES/DEVIS", "💰 EXPORT OHADA"],
@@ -1704,7 +1705,6 @@ with st.sidebar:
    menu = st.radio(selected_category, CATEGORIES[selected_category], key="menu_radio", label_visibility="collapsed")
   
   st.divider()
-  st.caption("💡 Astuce: Tape dans recherche pour trouver vite")
 
 c1,c2=st.columns([1,4])
 with c1:
@@ -1712,6 +1712,26 @@ with c1:
 with c2:
  st.markdown("<h1 style='margin:0;color:#225522;'>JT-AGRITECH</h1><p style='margin:0;color:#5a7a3a;font-weight:800;'>AU SERVICE DES PAYSANS</p>",unsafe_allow_html=True)
 st.divider()
+
+if "BIENVENUE" in menu:
+ # PORTAIL DE BIENVENUE JT-AGRITECH - Au service des paysans
+ try:
+  st.markdown("<h1 style='text-align:center; color:#225522;'>🌱 BIENVENUE CHEZ JT-AGRITECH SOLUTIONS</h1><p style='text-align:center; color:#5a7a3a; font-weight:800; font-size:18px;'>Au service des paysans</p>", unsafe_allow_html=True)
+  st.divider()
+  c1,c2,c3 = st.columns([1,2,1])
+  with c2:
+   if logo_path and logo_path.exists():
+    st.image(str(logo_path), use_container_width=True)
+  st.markdown("### 🏠 Portail de Bienvenue")
+  st.info("Bienvenue sur la plateforme JT-AGRITECH SOLUTIONS - Au service des paysans. Gérez vos éleveurs, bacs, récoltes et paiements.")
+  if affiche_path and affiche_path.exists():
+   st.image(str(affiche_path), caption="JT-AGRITECH - Au service des paysans", use_container_width=True)
+  st.markdown(f"### 👨‍🌾 {len(df)} Éleveurs enregistrés (8 éleveurs)")
+  if not df.empty:
+   st.dataframe(df[["nom","prenom","telephone","quartier","bacs"]].fillna(""), use_container_width=True)
+  st.success("✅ Vrai logo JT-AGRITECH lors création raccourci téléphone/tablette - Logo rouge Streamlit supprimé")
+ except Exception as e:
+  st.error(f"Erreur portail: {e}")
 
 if "TABLEAU DE BORD" in menu:
  total=len(df)
