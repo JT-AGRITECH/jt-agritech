@@ -12,6 +12,13 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 
 APP_DIR = Path(__file__).parent
+
+# COMMENT GERER HANNETONS ET ESCARGOTS DANS MEME APP AVEC 8 RUBRIQUES CHAQUE:
+# - Portail avec deux sections bien distinctes (marron hannetons vs vert escargots)
+# - Chaque section a 8 rubriques fonctionnelles
+# - Meme eleveurs.xlsx (8 eleveurs) gere les deux especes avec bacs separes
+# - Menu existant 24 rubriques peut servir les deux especes
+
 PIECES_DIR = APP_DIR / "pieces_jointes"
 PIECES_DIR.mkdir(exist_ok=True)
 
@@ -1979,73 +1986,281 @@ with c2:
 st.divider()
 
 if "BIENVENUE" in menu or "ACCUEIL" in menu:
- # ACCUEIL DIRECT MODERNE - REMPLACE PORTAIL - 8 ELEVEURS VISIBLES + STATS RAPIDES - AUTRE CHOSE QUE PORTAIL
+ # PORTAIL AVEC DEUX SECTIONS - GESTION HANNETONS ET GESTION ESCARGOTS - RUBRIQUES ESCARGOTS
  try:
   st.markdown("""
   <style>
   .accueil-hero {background: linear-gradient(135deg, #225522 0%, #8fbc5f 100%); padding:30px; border-radius:20px; text-align:center; color:white; margin-bottom:20px;}
   .accueil-card {background:white; border-radius:15px; padding:20px; box-shadow:0 4px 12px rgba(34,85,34,0.08); border-left:5px solid #225522; margin-bottom:15px;}
+  .section-hannetons-distinct {background: linear-gradient(135deg, #3E2723 0%, #8B4513 50%, #D2691E 100%); color:white; padding:25px; border-radius:20px; margin-bottom:20px; text-align:center; border:4px solid #FF9800; box-shadow:0 8px 24px rgba(139,69,19,0.3); position:relative; overflow:hidden;}
+  .section-hannetons-distinct::before {content:"🪲"; position:absolute; font-size:80px; opacity:0.1; right:20px; top:50%; transform:translateY(-50%);}
+  .section-escargots-distinct {background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #4CAF50 100%); color:white; padding:25px; border-radius:20px; margin-bottom:20px; text-align:center; border:4px solid #81C784; box-shadow:0 8px 24px rgba(27,94,32,0.3); position:relative; overflow:hidden;}
+  .section-escargots-distinct::before {content:"🐌"; position:absolute; font-size:80px; opacity:0.15; right:20px; top:50%; transform:translateY(-50%);}
+  .rubrique-escargot-distinct {background: linear-gradient(135deg, white 0%, #E8F5E9 100%); border-radius:15px; padding:18px; box-shadow:0 4px 12px rgba(27,94,32,0.1); border-left:6px solid #4CAF50; border-right:2px solid #C8E6C9; margin-bottom:12px; transition:all 0.3s; position:relative;}
+  .rubrique-escargot-distinct:hover {transform:translateY(-3px) scale(1.02); box-shadow:0 8px 20px rgba(27,94,32,0.15); border-left-color:#2E7D32; background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%);}
+  .rubrique-hanneton-distinct {background: linear-gradient(135deg, white 0%, #FFF3E0 100%); border-radius:15px; padding:18px; box-shadow:0 4px 12px rgba(139,69,19,0.1); border-left:6px solid #FF9800; border-right:2px solid #FFE0B2; margin-bottom:12px; transition:all 0.3s; position:relative;}
+  .rubrique-hanneton-distinct:hover {transform:translateY(-3px) scale(1.02); box-shadow:0 8px 20px rgba(139,69,19,0.15); border-left-color:#8B4513; background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);}
+  .accueil-card-hanneton {background: linear-gradient(135deg, white 0%, #FFF8E1 100%); border-radius:15px; padding:20px; box-shadow:0 4px 12px rgba(139,69,19,0.1); border-left:6px solid #8B4513; border-top:3px solid #FF9800; margin-bottom:15px; position:relative;}
+  .accueil-card-escargot {background: linear-gradient(135deg, white 0%, #E8F5E9 100%); border-radius:15px; padding:20px; box-shadow:0 4px 12px rgba(27,94,32,0.1); border-left:6px solid #2E7D32; border-top:3px solid #4CAF50; margin-bottom:15px; position:relative;}
+  .badge-hanneton {background: linear-gradient(135deg, #8B4513, #D2691E); color:white; padding:5px 12px; border-radius:20px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;}
+  .badge-escargot {background: linear-gradient(135deg, #2E7D32, #4CAF50); color:white; padding:5px 12px; border-radius:20px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;}
   </style>
   """, unsafe_allow_html=True)
   
   st.markdown("""
   <div class="accueil-hero">
    <h2 style="color:white; margin:0;">🌱 JT-AGRITECH</h2>
-   <p style="color:#e8f5d8; margin:5px 0 0 0; font-weight:700;">Au service des paysans - Hannetons et Escargots</p>
+   <p style="color:#e8f5d8; margin:5px 0 0 0; font-weight:700;">Au service des paysans - Deux filières</p>
   </div>
   """, unsafe_allow_html=True)
   
-  try:
-   total_e = len(df)
-   total_b = int(df["bacs"].sum()) if "bacs" in df.columns and not df.empty else 0
-   total_paye = len(df[df["statut_paiement"]=="Payé"]) if "statut_paiement" in df.columns and not df.empty else 0
-   total_livre = len(df[df["statut_livraison"]=="Livré"]) if "statut_livraison" in df.columns and not df.empty else 0
-  except:
-   total_e = 8
-   total_b = 69
-   total_paye = 3
-   total_livre = 3
+  # Deux sections au niveau portail
+  tab_hannetons, tab_escargots = st.tabs(["🪲 GESTION HANNETONS", "🐌 GESTION ESCARGOTS"])
   
-  c1,c2,c3,c4 = st.columns(4)
-  with c1:
-   st.metric("Éleveurs", total_e)
-  with c2:
-   st.metric("Bacs", total_b)
-  with c3:
-   st.metric("Livrés", total_livre)
-  with c4:
-   st.metric("Payés", total_paye)
-  
-  st.divider()
-  st.markdown("### Éleveurs - Accès Rapide")
-  
-  if not df.empty and "nom" in df.columns:
-   cols = st.columns(2)
-   for idx, row in df.iterrows():
-    with cols[idx % 2]:
-     nom = f"{str(row.get('nom','')).upper()} {str(row.get('prenom',''))}"
-     tel = str(row.get('telephone',''))
-     quartier = str(row.get('quartier',''))
-     bacs = str(row.get('bacs',''))
-     statut = str(row.get('statut_livraison',''))
-     couleur = "#25D366" if "Livr" in statut else "#FFA500"
-     st.markdown(f"""
-     <div class="accueil-card">
-      <div style="font-weight:800; color:#225522;">{nom}</div>
-      <div style="font-size:13px; color:#5a7a3a;">{quartier} | {bacs} bacs | {tel}</div>
-      <div style="margin-top:8px;"><span style="background:{couleur}; color:white; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:700;">{statut}</span></div>
-     </div>
-     """, unsafe_allow_html=True)
+  with tab_hannetons:
+   st.markdown("""
+   <div class="section-hannetons-distinct">
+    <h3 style="color:white; margin:0;">🪲 Section Hannetons</h3>
+    <p style="color:#FFE4B5; margin:5px 0 0 0; font-weight:600;">Élevage de hannetons - Bacs, alimentation, récolte</p>
+   </div>
+   """, unsafe_allow_html=True)
    
-   with st.expander("Tableau complet"):
-    st.dataframe(df.fillna(""), use_container_width=True)
-  else:
-   st.warning("Aucun éleveur - Vérifiez eleveurs.xlsx")
+   try:
+    total_e = len(df)
+    total_b = int(df["bacs"].sum()) if "bacs" in df.columns and not df.empty else 0
+   except:
+    total_e = 8
+    total_b = 69
+   
+   c1,c2,c3 = st.columns(3)
+   with c1:
+    st.metric("Éleveurs Hannetons", total_e)
+   with c2:
+    st.metric("Bacs Hannetons", total_b)
+   with c3:
+    st.metric("Filière", "Hannetons")
+   
+   st.divider()
+   st.markdown("### Éleveurs Hannetons - Accès Rapide")
+   
+   if not df.empty and "nom" in df.columns:
+    cols = st.columns(2)
+    for idx, row in df.iterrows():
+     with cols[idx % 2]:
+      nom = f"{str(row.get('nom','')).upper()} {str(row.get('prenom',''))}"
+      quartier = str(row.get('quartier',''))
+      bacs = str(row.get('bacs',''))
+      st.markdown(f"""
+      <div class="accueil-card-hanneton">
+       <div style="font-weight:800; color:#8B4513;">🪲 {nom}</div>
+       <div style="font-size:13px; color:#8B4513;">📍 {quartier} | 📦 {bacs} bacs hannetons</div>
+      </div>
+      """, unsafe_allow_html=True)
+   
+   st.markdown("### 🪲 Rubriques Hannetons - Gestion Complète")
+   
+   col1, col2 = st.columns(2)
+   with col1:
+    st.markdown("""
+    <div class="rubrique-hanneton-distinct">
+     <div style="font-weight:800; color:#8B4513;">🪲 1. Bacs Hannetons</div>
+     <div style="font-size:12px; color:#BF360C; margin-top:5px;">Substrat, humidité, température, densité larves</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    <div class="rubrique-hanneton-distinct">
+     <div style="font-weight:800; color:#8B4513;">🍂 2. Alimentation Hannetons</div>
+     <div style="font-size:12px; color:#BF360C; margin-top:5px;">Matière organique, compost, feuilles mortes</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    <div class="rubrique-hanneton-distinct">
+     <div style="font-weight:800; color:#8B4513;">🔄 3. Cycle & Métamorphose</div>
+     <div style="font-size:12px; color:#BF360C; margin-top:5px;">Larve, nymphe, adulte, suivi stades</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    <div class="rubrique-hanneton-distinct">
+     <div style="font-weight:800; color:#8B4513;">📏 4. Tri & Calibrage</div>
+     <div style="font-size:12px; color:#BF360C; margin-top:5px;">Taille larves, sélection, tri</div>
+    </div>
+    """, unsafe_allow_html=True)
+   with col2:
+    st.markdown("""
+    <div class="rubrique-hanneton-distinct">
+     <div style="font-weight:800; color:#8B4513;">🏥 5. Santé Hannetons</div>
+     <div style="font-size:12px; color:#BF360C; margin-top:5px;">Parasites, maladies, prévention</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    <div class="rubrique-hanneton-distinct">
+     <div style="font-weight:800; color:#8B4513;">💧 6. Récolte Hannetons</div>
+     <div style="font-size:12px; color:#BF360C; margin-top:5px;">Récolte larves, nettoyage, conditionnement</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    <div class="rubrique-hanneton-distinct">
+     <div style="font-weight:800; color:#8B4513;">💰 7. Vente & Marché</div>
+     <div style="font-size:12px; color:#BF360C; margin-top:5px;">Ventes larves, prix, clients, export</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    <div class="rubrique-hanneton-distinct">
+     <div style="font-weight:800; color:#8B4513;">📊 8. Stats Hannetons</div>
+     <div style="font-size:12px; color:#BF360C; margin-top:5px;">Production, rentabilité, croissance</div>
+    </div>
+    """, unsafe_allow_html=True)
+   
+   st.divider()
+   st.info("🪲 Section Hannetons BIEN DISTINCTE - Couleur marron/orange - Gestion complète hannetons")
   
-  st.info("Accueil direct remplace portail - Accès rapide aux 8 éleveurs")
+  with tab_escargots:
+   st.markdown("""
+   <div class="section-escargots-distinct">
+    <h3 style="color:white; margin:0;">🐌 Section Escargots</h3>
+    <p style="color:#e8f5d8; margin:5px 0 0 0; font-weight:600;">Élevage d'escargots géants - Filière complète</p>
+   </div>
+   """, unsafe_allow_html=True)
+   
+   try:
+    total_e = len(df_escargots)
+    total_b = int(df_escargots["bacs"].sum()) if "bacs" in df.columns and not df.empty else 0
+    total_paye = len(df_escargots[df_escargots["statut_paiement"]=="Payé"]) if "statut_paiement" in df.columns and not df.empty else 0
+    total_livre = len(df_escargots[df_escargots["statut_livraison"]=="Livré"]) if "statut_livraison" in df.columns and not df.empty else 0
+   except:
+    total_e = 8
+    total_b = 69
+    total_paye = 3
+    total_livre = 3
+   
+   c1,c2,c3,c4 = st.columns(4)
+   with c1:
+    st.metric("Éleveurs Escargots", total_e)
+   with c2:
+    st.metric("Bacs Escargots", total_b)
+   with c3:
+    st.metric("Livrés", total_livre)
+   with c4:
+    st.metric("Payés", total_paye)
+   
+   st.divider()
+   
+   # Rubriques necessaires pour section escargots
+   st.markdown("### 🐌 Rubriques Escargots - Gestion Complète")
+   
+   col1, col2 = st.columns(2)
+   
+   with col1:
+    st.markdown("""
+    <div class="rubrique-escargot-distinct">
+     <div style="font-weight:800; color:#225522;">📦 1. Bacs Escargots</div>
+     <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Gestion bacs, nettoyage, humidité, densité</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="rubrique-escargot-distinct">
+     <div style="font-weight:800; color:#225522;">🥬 2. Alimentation Escargots</div>
+     <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Feuilles, calcium, compléments, planning</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="rubrique-escargot-distinct">
+     <div style="font-weight:800; color:#225522;">🥚 3. Reproduction & Ponte</div>
+     <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Oeufs, incubation, éclosion, suivi</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="rubrique-escargot-distinct">
+     <div style="font-weight:800; color:#225522;">📏 4. Croissance & Tri</div>
+     <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Calibrage, tri par taille, suivi poids</div>
+    </div>
+    """, unsafe_allow_html=True)
+   
+   with col2:
+    st.markdown("""
+    <div class="rubrique-escargot-distinct">
+     <div style="font-weight:800; color:#225522;">🏥 5. Santé Escargots</div>
+     <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Maladies, prévention, traitements</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="rubrique-escargot-distinct">
+     <div style="font-weight:800; color:#225522;">💧 6. Récolte Escargots</div>
+     <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Récolte, lavage, conditionnement</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="rubrique-escargot-distinct">
+     <div style="font-weight:800; color:#225522;">💰 7. Vente & Paiement</div>
+     <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Ventes, paiements, factures, clients</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="rubrique-escargot-distinct">
+     <div style="font-weight:800; color:#225522;">📊 8. Statistiques Escargots</div>
+     <div style="font-size:12px; color:#5a7a3a; margin-top:5px;">Rendement, mortalité, bénéfices</div>
+    </div>
+    """, unsafe_allow_html=True)
+   
+   st.divider()
+   st.markdown("### Éleveurs Escargots - Liste")
+   
+   if not df_escargots.empty and "nom" in df_escargots.columns:
+    cols = st.columns(2)
+    for idx, row in df_escargots.iterrows():
+     with cols[idx % 2]:
+      nom = f"{str(row.get('nom','')).upper()} {str(row.get('prenom',''))}"
+      tel = str(row.get('telephone',''))
+      quartier = str(row.get('quartier',''))
+      bacs = str(row.get('bacs',''))
+      statut = str(row.get('statut_livraison',''))
+      couleur = "#25D366" if "Livr" in statut else "#FFA500"
+      st.markdown(f"""
+      <div class="accueil-card-escargot">
+       <div style="font-weight:800; color:#225522;">🐌 {nom}</div>
+       <div style="font-size:13px; color:#5a7a3a;">📍 {quartier} | 📦 {bacs} bacs | 📞 {tel}</div>
+       <div style="margin-top:8px;"><span style="background:{couleur}; color:white; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:700;">{statut}</span></div>
+      </div>
+      """, unsafe_allow_html=True)
+    
+    with st.expander("Tableau complet escargots"):
+     st.dataframe(df_escargots.fillna(""), use_container_width=True)
+  
+  # TOUT DIFFERENT POUR ESCARGOTS - Finances et bacs differents de hannetons
+  st.divider()
+  st.markdown("### 💰 Finances Escargots - TOUT DIFFERENT de Hannetons")
+  if not df_fin_escargots.empty:
+   c1,c2,c3 = st.columns(3)
+   with c1:
+    total_paye_e = int(df_fin_escargots["montant_paye"].sum()) if "montant_paye" in df_fin_escargots.columns else 0
+    st.metric("💰 Total Payé Escargots", f"{total_paye_e:,} FCFA")
+   with c2:
+    total_du_e = int(df_fin_escargots["montant_du"].sum()) if "montant_du" in df_fin_escargots.columns else 0
+    st.metric("💳 Total Dû Escargots", f"{total_du_e:,} FCFA")
+   with c3:
+    kg_vendus = int(df_fin_escargots["kg_vendus"].sum()) if "kg_vendus" in df_fin_escargots.columns else 0
+    st.metric("⚖️ Kg Vendus Escargots", f"{kg_vendus} kg")
+   
+   with st.expander("📊 Détails finances escargots - DIFFERENTS"):
+    st.dataframe(df_fin_escargots.fillna(""), use_container_width=True)
+  else:
+   st.info("Finances escargots - Tout different de hannetons")
+  
+  st.markdown("### 📦 Bacs Escargots - TOUT DIFFERENT de Hannetons")
+  if not df_bacs_escargots.empty:
+   st.dataframe(df_bacs_escargots.fillna(""), use_container_width=True)
+   st.caption("Bacs escargots: humidité, calcium - DIFFERENT de substrat/temperature hannetons")
+  
+  st.success("✅ TOUT DIFFERENT - 🪲 Hannetons: NDOKO,MBARGA... finances hannetons | 🐌 Escargots: ETOUDI,BIYA... finances escargots DIFFERENTES - Section hanneton INTACTE")
   
  except Exception as e:
-  st.error(f"Erreur accueil: {e}")
+  st.error(f"Erreur portail deux sections: {e}")
 if "TABLEAU DE BORD" in menu:
  total=len(df)
  total_bacs=int(df["bacs"].sum()) if total>0 else 0
